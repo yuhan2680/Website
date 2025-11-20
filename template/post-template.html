@@ -524,11 +524,17 @@ sendComment.onclick = () => {
   sendComment.disabled = true;
   sendComment.textContent = "提交中…";
 
-  fetch("/api/comments", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({post_id:postId, nickname, content})
-  })
+  fetch(`/api/comments?post=${postId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          nickname,
+          content
+        })
+    })
+
   .then(res=>res.json())
   .then(r=>{
     if(!r.ok){

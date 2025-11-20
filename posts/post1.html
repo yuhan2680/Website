@@ -646,15 +646,17 @@
       btn.disabled = true;
       btn.innerText = "提交中…";
 
-      fetch("/api/comments", {
+      fetch(`/api/comments?post=${postId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          post_id: postId,
           nickname,
           content
         })
       })
+
       .then(res => res.json())
       .then(res => {
         if (!res.ok) {
