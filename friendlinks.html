@@ -7,183 +7,17 @@
 
   <!-- 二次元字体 -->
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-
+  <link rel="stylesheet" href="style.css"/>
   <style>
     :root {
-      /* 亮色模式 */
-      --bg-top: #dffaff;
-      --bg-bottom: #e8f2ff;
-      --text-color: #444;
-      --banner-bg: rgba(255,255,255,0.55);
-      --card-bg: rgba(255,255,255,0.88);
-      --nav-bg: linear-gradient(90deg, #2ec7c9 0%, #2970ea 100%);
-      --link-card-bg: rgba(255, 255, 255, 0.6);
-
       --title-color: #2970ea;
       --subtitle-color: #577;
 
-      /* 夜间模式 */
-      --night-bg-top: #0a0f19;
-      --night-bg-bottom: #0f1a2d;
-      --night-text: #cfd8ff;
-      --night-banner-bg: rgba(40,50,70,0.55);
-      --night-card-bg: rgba(30,40,60,0.75);
-      --night-nav-bg: linear-gradient(90deg, #1c8ca3 0%, #2352a5 100%);
-      --night-link-card-bg: rgba(40,40,60,0.6);
-
+      /*夜间模式*/
       --night-title: #7aa8ff;
       --night-subtitle: #9bb0d8;
     }
 
-    /* 页面布局（可滚动） */
-    body.light {
-      background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
-      background-attachment: fixed;
-      color: var(--text-color);
-      overflow-x: hidden;
-      overflow-y: scroll;
-    }
-    body.night {
-      background: linear-gradient(180deg, var(--night-bg-top), var(--night-bg-bottom));
-      background-attachment: fixed;
-      color: var(--night-text);
-      overflow-x: hidden;
-      overflow-y: scroll;
-    }
-
-    /* 星空背景 Canvas */
-    #star-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    /* 夜间模式按钮 */
-    .night-toggle {
-      position: fixed;
-      top: 14px;
-      right: 18px;
-      background: rgba(255,255,255,0.35);
-      backdrop-filter: blur(6px);
-      border-radius: 18px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-size: 1.2em;
-      z-index: 1000;
-      transition: 0.25s;
-    }
-    body.night .night-toggle {
-      background: rgba(40,40,60,0.45);
-      color: #fff;
-    }
-
-    /* 导航栏 */
-    .menu-nav {
-      width: 100%;
-      background: var(--nav-bg);
-      position: sticky;
-      top: 0;
-      z-index: 999;
-      box-shadow: 0 4px 12px rgba(41,112,234,0.22);
-      border-bottom: 4px solid rgba(255,255,255,0.35);
-    }
-    body.night .menu-nav {
-      background: var(--night-nav-bg);
-      border-bottom-color: rgba(255,255,255,0.15);
-    }
-
-    .menu-container {
-      max-width: 880px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 24px;
-    }
-
-    .menu-logo a {
-      color: #fff;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 1.4em;
-    }
-
-    .menu-list {
-      list-style: none;
-      display: flex;
-      gap: 28px;
-    }
-
-    .menu-item {
-      color: #fff;
-      text-decoration: none;
-      padding: 4px 10px;
-      border-radius: 8px;
-      transition: 0.25s;
-    }
-
-    .menu-item.active,
-    .menu-item:hover {
-      background: rgba(255,255,255,0.28);
-    }
-
-    /* Banner */
-    .banner {
-      max-width: 900px;
-      margin: 40px auto 0;
-      padding: 40px 20px;
-      text-align: center;
-      border-radius: 24px;
-      backdrop-filter: blur(12px);
-      background: var(--banner-bg);
-      animation: float 4s ease-in-out infinite;
-      box-shadow: 0 6px 22px rgba(41,112,234,0.22);
-    }
-
-    body.night .banner {
-      background: var(--night-banner-bg);
-      box-shadow: 0 6px 22px rgba(10,20,40,0.6);
-    }
-
-    @keyframes float {
-      0% { transform: translateY(0);}
-      50% { transform: translateY(-6px);}
-      100% { transform: translateY(0);}
-    }
-
-    .banner h1 {
-      font-size: 2.4em;
-      margin: 0;
-      color: var(--title-color);
-    }
-    body.night .banner h1 {
-      color: var(--night-title);
-    }
-
-    .section {
-      max-width: 900px;
-      margin: 34px auto;
-      padding: 28px;
-      background: var(--card-bg);
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 18px rgba(41,112,234,0.17);
-    }
-    body.night .section {
-      background: var(--night-card-bg);
-      box-shadow: 0 4px 18px rgba(5,8,18,0.7);
-    }
-
-    .section h2 {
-      margin-top: 0;
-      color: var(--title-color);
-    }
-    body.night .section h2 {
-      color: var(--night-title);
-    }
 
     /* 友链卡片 */
     .friend-card {
@@ -226,80 +60,12 @@
       color: var(--night-subtitle);
     }
 
-    /* 汉堡按钮：默认隐藏，只在竖屏显示 */
-    .hamburger {
-      display: none;
-      font-size: 1.8em;
-      color: white;
-      cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 8px;
-      transition: 0.2s;
-    }
-    body.night .hamburger {
-      color: #ddd;
-    }
-
-    /* ---- 移动端竖屏适配 ---- */
-    @media (max-width: 820px), (max-aspect-ratio: 3/4) {
-
-      /* 让容器上下堆叠 */
-      .menu-container {
-        flex-direction: row;
-        justify-content: space-between;
-      }
-
-      /* 汉堡按钮显示 */
-      .hamburger {
-        display: block;
-      }
-
-      /* 默认隐藏菜单 */
-      .menu-list {
-        display: none;
-        flex-direction: column;
-        width: 100%;
-        margin-top: 14px;
-        background: rgba(255,255,255,0.15);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        padding: 12px 0;
-        animation: fadeIn 0.25s ease;
-      }
-      body.night .menu-list {
-        background: rgba(20,20,40,0.35);
-      }
-
-      /* 展开菜单时添加这个 class */
-      .menu-list.show {
-        display: flex;
-      }
-
-      /* 菜单项样式（竖排） */
-      .menu-list li {
-        width: 100%;
-        text-align: center;
-      }
-      .menu-item {
-        display: block;
-        width: 100%;
-        padding: 12px 0;
-        border-radius: 0;
-      }
-    }
-
-    /* 小动画 */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
   </style>
 </head>
 
 <body class="light">
 
-  <!-- 夜间模式按钮 -->
-  <div class="night-toggle" id="nightToggle">🌙</div>
+
 
   <!-- 星空背景 -->
   <canvas id="star-canvas"></canvas>
@@ -311,20 +77,26 @@
       <!-- Logo -->
       <div class="menu-logo"><a href="index.html">小涵Naiwenel</a></div>
 
-      <!-- 汉堡按钮（移动端可见） -->
-      <div class="hamburger" id="hamburger">
-        ☰
+      <!-- 功能区域：导航栏和主题切换 -->
+      <div class="menu-function">
+        <!-- 汉堡按钮（移动端可见） -->
+        <div class="hamburger" id="hamburger">
+          ☰
+        </div>
+  
+        <!-- 导航菜单 -->
+        <ul class="menu-list" id="menuList">
+          <li><a href="index.html" class="menu-item">首页</a></li>
+          <li><a href="blog.html" class="menu-item">博客列表</a></li>
+          <li><a href="about.html" class="menu-item">关于我</a></li>
+          <li><a href="friendlinks.html" class="menu-item active">友情链接</a></li>
+        </ul>
+  
+        <!-- 夜间模式切换 -->
+        <div class="night-toggle" id="nightToggle">🌙</div>
+  
+        </div>
       </div>
-
-      <!-- 导航菜单 -->
-      <ul class="menu-list" id="menuList">
-        <li><a href="index.html" class="menu-item active">首页</a></li>
-        <li><a href="blog.html" class="menu-item">博客列表</a></li>
-        <li><a href="about.html" class="menu-item">关于我</a></li>
-        <li><a href="friendlinks.html" class="menu-item">友情链接</a></li>
-      </ul>
-
-    </div>
   </nav>
 
   <!-- Banner -->
