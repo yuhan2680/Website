@@ -63,9 +63,7 @@
 
     /* 夜间模式切换按钮 */
     .night-toggle {
-      position: fixed;
-      top: 14px;
-      right: 18px;
+      position: relative;
       background: rgba(255,255,255,0.35);
       backdrop-filter: blur(6px);
       border-radius: 18px;
@@ -102,6 +100,11 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 24px;
+    }
+    .menu-container .menu-function{
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
     .menu-logo a {
       color: #fff;
@@ -368,6 +371,8 @@
     /* 汉堡按钮：默认隐藏，只在竖屏显示 */
     .hamburger {
       display: none;
+      position: relative;
+      top: -2px;
       font-size: 1.8em;
       color: white;
       cursor: pointer;
@@ -439,9 +444,6 @@
 
 <body class="light">
 
-  <!-- 夜间模式切换 -->
-  <div class="night-toggle" id="nightToggle">🌙</div>
-
   <!-- 星空背景 -->
   <canvas id="star-canvas"></canvas>
 
@@ -452,20 +454,26 @@
       <!-- Logo -->
       <div class="menu-logo"><a href="index.html">小涵Naiwenel</a></div>
 
-      <!-- 汉堡按钮（移动端可见） -->
-      <div class="hamburger" id="hamburger">
-        ☰
+      <!-- 功能区域：导航栏和主题切换 -->
+      <div class="menu-function">
+        <!-- 汉堡按钮（移动端可见） -->
+        <div class="hamburger" id="hamburger">
+          ☰
+        </div>
+  
+        <!-- 导航菜单 -->
+        <ul class="menu-list" id="menuList">
+          <li><a href="index.html" class="menu-item active">首页</a></li>
+          <li><a href="blog.html" class="menu-item">博客列表</a></li>
+          <li><a href="about.html" class="menu-item">关于我</a></li>
+          <li><a href="friendlinks.html" class="menu-item">友情链接</a></li>
+        </ul>
+  
+        <!-- 夜间模式切换 -->
+        <div class="night-toggle" id="nightToggle">🌙</div>
+  
+        </div>
       </div>
-
-      <!-- 导航菜单 -->
-      <ul class="menu-list" id="menuList">
-        <li><a href="index.html" class="menu-item active">首页</a></li>
-        <li><a href="blog.html" class="menu-item">博客列表</a></li>
-        <li><a href="about.html" class="menu-item">关于我</a></li>
-        <li><a href="friendlinks.html" class="menu-item">友情链接</a></li>
-      </ul>
-
-    </div>
   </nav>
 
 
