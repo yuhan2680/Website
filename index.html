@@ -276,7 +276,9 @@
 
     // 获取当前文章 ID：例如 /posts/post0.html → post0
     const postId = location.pathname.split("/").pop().replace(".html", "");
-
+    if(!postId){
+      postId = 'index';
+    }
     // 最小提交间隔（毫秒）
     const MIN_INTERVAL = 3000;
     let lastSubmitTime = 0;
@@ -302,7 +304,6 @@
 
     document.getElementById("sendComment").onclick = () => {
       const now = Date.now();
-
       // ① 防止快速连点（客户端）
       if (now - lastSubmitTime < MIN_INTERVAL) {
         alert("提交太快，请稍后再试！");
@@ -343,7 +344,6 @@
           content
         })
       })
-      
       .then(res => res.json())
       .then(res => {
         if (!res.ok) {
