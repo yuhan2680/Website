@@ -275,7 +275,7 @@
     };
 
     // 获取当前文章 ID：例如 /posts/post0.html → post0
-    const postId = location.pathname.split("/").pop().replace(".html", "");
+    let postId = location.pathname.split("/").pop().replace(".html", "");
     if(!postId){
       postId = 'index';
     }
