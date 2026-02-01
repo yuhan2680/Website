@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>博客列表 - 小涵Naiwenel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- 二次元圆润字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght:400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    
+    /* 博客列表卡片 */
+    .section h2 {
+      font-size: 1.6em;
+      margin-top: 0;
+      color: #2970ea;
+    }
+    body.night .section h2 { color: #7aa8ff; }
+
+    .post-list { list-style: none; padding: 0; margin: 0; }
+    .post-list li {
+      padding: 18px 12px;
+      border-bottom: 1px solid #e6e6e6;
+      margin-bottom: 10px;
+    }
+
+    .post-date { color: #888; margin-left: 8px; }
+    body.night .post-date { color: #b8c4e0; }
+
+    .post-desc { margin-top: 8px; font-size: 0.98em; color: #555; }
+    body.night .post-desc { color: #9fb4d0; }
+
+
+  </style>
+</head>
+
+<body class="light">
+
+
+  <!-- 星空背景 -->
+  <canvas id="star-canvas"></canvas>
+
+  <!-- 导航栏 -->
+  <nav class="menu-nav">
+    <div class="menu-container">
+
+      <!-- Logo -->
+      <div class="menu-logo"><a href="index.html">小涵Naiwenel</a></div>
+
+      <!-- 功能区域：导航栏和主题切换 -->
+      <div class="menu-function">
+        <!-- 汉堡按钮（移动端可见） -->
+        <div class="hamburger" id="hamburger">
+          ☰
+        </div>
+  
+        <!-- 导航菜单 -->
+        <ul class="menu-list" id="menuList">
+          <li><a href="index.html" class="menu-item">首页</a></li>
+          <li><a href="blog.html" class="menu-item active">博客列表</a></li>
+          <li><a href="about.html" class="menu-item">关于我</a></li>
+          <li><a href="friendlinks.html" class="menu-item">友情链接</a></li>
+        </ul>
+  
+        <!-- 夜间模式切换 -->
+        <div class="night-toggle" id="nightToggle">🌙</div>
+  
+        </div>
+      </div>
+  </nav>
+
+  <!-- Banner -->
+  <div class="banner">
+    <h1>博客列表 📚</h1>
+    <p>这里记录了小涵的想法、日志与创作旅程</p>
+  </div>
+
+  <!-- 博客列表内容 -->
+  <div class="section">
+    <h2>📝 文章列表</h2>
+
+    <ul class="post-list">
+      <li>
+        <a class="post-title" href="posts/post0.html">test</a>
+        <span class="post-date">2025-11-20</span>
+        <div class="post-desc">test</div>
+      </li>
+
+      <li>
+        <a class="post-title" href="posts/post1.html">第一篇文章</a>
+        <span class="post-date">2025-11-20</span>
+        <div class="post-desc">这个是此博客的第一篇文章</div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 动画脚本：星空 / 鼠标吸引 / 爆炸 / 扩散圈 -->
+  <script>
+    const canvas = document.getElementById("star-canvas");
+    const ctx = canvas.getContext("2d");
+
+    let stars = [], bursts = [], rings = [];
+    let w, h;
+    let mouse = { x: null, y: null };
+
+    /* 夜间模式 */
+    const toggleBtn = document.getElementById("nightToggle");
+    toggleBtn.onclick = () => {
+      if (document.body.classList.contains("light")) {
+        document.body.classList.replace("light", "night");
+        toggleBtn.textContent = "☀️";
+      } else {
+        document.body.classList.replace("night", "light");
+        toggleBtn.textContent = "🌙";
+      }
+    };
+
+    /* Canvas 尺寸自适应 */
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.onresize = resize;
+    resize();
+
+    /* 初始化星星 */
+    function initStars() {
+      stars = [];
+      for (let i = 0; i < 130; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.3 + 0.4,
+          dx: (Math.random() - 0.5) * 0.15,
+          dy: (Math.random() - 0.5) * 0.15,
+          color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea"
+        });
+      }
+    }
+
+    /* 鼠标吸引 */
+    window.addEventListener("mousemove", e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener("mouseleave", () => {
+      mouse.x = null;
+    });
+
+    /* 点击事件：星爆 + 波纹 */
+    window.addEventListener("mousedown", createBurst);
+    window.addEventListener("touchstart", e => {
+      const t = e.touches[0];
+      createBurst({ clientX: t.clientX, clientY: t.clientY });
+    });
+
+    function createBurst(e) {
+      const x = e.clientX, y = e.clientY;
+
+      for (let i = 0; i < 14; i++) {
+        bursts.push({
+          x: x,
+          y: y,
+          r: Math.random() * 3 + 2,
+          dx: (Math.random() - 0.5) * 4,
+          dy: (Math.random() - 0.5) * 4,
+          life: 1,
+          color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea",
+          trail: []
+        });
+      }
+      rings.push({ x: x, y: y, r: 0, alpha: 0.85 });
+    }
+
+    /* 粒子尾迹 */
+    function drawBursts() {
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        let b = bursts[i];
+
+        /* 尾迹 */
+        b.trail.push({ x: b.x, y: b.y, alpha: b.life });
+        if (b.trail.length > 10) b.trail.shift();
+
+        for (let t of b.trail) {
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = b.color + Math.floor(t.alpha * 255).toString(16).padStart(2, "0");
+          ctx.fill();
+        }
+
+        /* 本体 */
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = b.color + Math.floor(b.life * 255).toString(16).padStart(2, "0");
+        ctx.fill();
+
+        b.x += b.dx;
+        b.y += b.dy;
+        b.dy += 0.03;
+        b.life -= 0.02;
+        b.r *= 0.97;
+
+        if (b.life <= 0 || b.r < 0.3) bursts.splice(i, 1);
+      }
+    }
+
+    /* 扩散波纹 */
+    function drawRings() {
+      for (let i = rings.length - 1; i >= 0; i--) {
+        let r = rings[i];
+
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(0,200,255," + r.alpha + ")";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        r.r += 2.3;
+        r.alpha -= 0.02;
+
+        if (r.alpha <= 0) rings.splice(i, 1);
+      }
+    }
+
+    /* 主绘制循环 */
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+
+      /* 星空 */
+      for (let s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = s.color + "AA";
+        ctx.fill();
+
+        s.x += s.dx;
+        s.y += s.dy;
+
+        /* 鼠标吸引 */
+        if (mouse.x !== null) {
+          const dx = mouse.x - s.x;
+          const dy = mouse.y - s.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < 150) {
+            s.x += dx * 0.015;
+            s.y += dy * 0.015;
+          }
+        }
+
+        if (s.x < 0 || s.x > w || s.y < 0 || s.y > h) {
+          s.x = Math.random() * w;
+          s.y = Math.random() * h;
+        }
+      }
+
+      drawBursts();
+      drawRings();
+
+      requestAnimationFrame(draw);
+    }
+
+    <!-- 汉堡按钮显示 -->
+    const hamburger = document.getElementById("hamburger");
+    const menuList = document.getElementById("menuList");
+
+    hamburger.addEventListener("click", () => {
+      menuList.classList.toggle("show");
+    });
+
+    initStars();
+    draw();
+  </script>
+
+</body>
+</html>

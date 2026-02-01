@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<title>友情链接 - 小涵Naiwenel</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- 二次元字体 -->
+	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="style.css"/>
+
+	<!-- 友链加载 -->
+	<script src="./functions/friendlinks/data.js"></script>
+	<script src="./functions/friendlinks/render.js"></script>
+	<style>
+		:root {
+			--title-color: #2970ea;
+			--subtitle-color: #577;
+
+			/*夜间模式*/
+			--night-title: #7aa8ff;
+			--night-subtitle: #9bb0d8;
+		}
+
+
+		/* 友链卡片 */
+		.friend-container {
+			width: 100%;
+			margin: 0;
+			padding: 0;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1rem;
+		}
+
+		.friend-card {
+			background: var(--link-card-bg);
+			backdrop-filter: blur(12px);
+			border-radius: 16px;
+			text-decoration: none;
+			box-shadow: 0 4px 14px rgba(41, 112, 234, 0.12);
+			transition: 0.25s;
+			border: 1px solid rgba(255, 255, 255, 0.4);
+			padding: 18px 22px;
+			margin-bottom: 16px;
+			display: flex;
+			gap: 1rem;
+		}
+
+		.friend-card:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 8px 22px rgba(41, 112, 234, 0.25);
+		}
+
+		.friend-card img {
+			width: 6rem;
+			height: 6rem;
+			border-radius: 50%;
+			display: block;
+		}
+
+		.friend-content {
+			flex: 1;
+			height: 6rem;
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.friend-title {
+			font-size: 1.2em;
+			font-weight: bold;
+			color: var(--title-color);
+		}
+
+		.friend-desc {
+			color: var(--subtitle-color);
+		}
+
+		@media screen and (max-width: 768px) {
+			.friend-container {
+				width: 100%;
+				margin: 0;
+				padding: 0;
+				display: grid;
+				grid-template-columns: 1fr;
+				gap: 1rem;
+			}
+		}
+	</style>
+</head>
+
+<body class="light">
+
+
+<!-- 星空背景 -->
+<canvas id="star-canvas"></canvas>
+
+<!-- 导航栏 -->
+<nav class="menu-nav">
+	<div class="menu-container">
+
+		<!-- Logo -->
+		<div class="menu-logo"><a href="index.html">小涵Naiwenel</a></div>
+
+		<!-- 功能区域：导航栏和主题切换 -->
+		<div class="menu-function">
+			<!-- 汉堡按钮（移动端可见） -->
+			<div class="hamburger" id="hamburger">
+				☰
+			</div>
+
+			<!-- 导航菜单 -->
+			<ul class="menu-list" id="menuList">
+				<li><a href="index.html" class="menu-item">首页</a></li>
+				<li><a href="blog.html" class="menu-item">博客列表</a></li>
+				<li><a href="about.html" class="menu-item">关于我</a></li>
+				<li><a href="friendlinks.html" class="menu-item active">友情链接</a></li>
+			</ul>
+
+			<!-- 夜间模式切换 -->
+			<div class="night-toggle" id="nightToggle">🌙</div>
+
+		</div>
+	</div>
+</nav>
+
+<!-- Banner -->
+<div class="banner">
+	<h1>友情链接 🔗</h1>
+	<p>这里收藏一些朋友们的小站和我喜欢的网站 ✨</p>
+</div>
+
+<!-- 友链内容 -->
+<div class="section">
+	<h2>🌟 朋友们的小站</h2>
+
+	<div class="friend-container">
+		<a class="friend-card" href="https://www.twis.uk" target="_blank">
+			<img src="https://github.com/Twisuki.png" alt="Twisuki">
+			<div class="friend-content">
+				<div class="friend-title">苏阳 Twisuki</div>
+				<div class="friend-desc">一只喜欢到处贴贴的小猫娘~</div>
+			</div>
+		</a>
+		<a class="friend-card" href="https://www.twis.uk" target="_blank">
+			<img src="https://github.com/Twisuki.png" alt="Twisuki">
+			<div class="friend-content">
+				<div class="friend-title">苏阳 Twisuki</div>
+				<div class="friend-desc">一只喜欢到处贴贴的小猫娘~</div>
+			</div>
+		</a>
+		<a class="friend-card" href="https://www.twis.uk" target="_blank">
+			<img src="https://github.com/Twisuki.png" alt="Twisuki">
+			<div class="friend-content">
+				<div class="friend-title">苏阳 Twisuki</div>
+				<div class="friend-desc">一只喜欢到处贴贴的小猫娘~</div>
+			</div>
+		</a>
+		<a class="friend-card" href="https://www.twis.uk" target="_blank">
+			<img src="https://github.com/Twisuki.png" alt="Twisuki">
+			<div class="friend-content">
+				<div class="friend-title">苏阳 Twisuki</div>
+				<div class="friend-desc">一只喜欢到处贴贴的小猫娘~</div>
+			</div>
+		</a>
+	</div>
+
+</div>
+
+<!-- 星空、爆炸、波纹动画脚本（与首页保持一致） -->
+<script>
+	const canvas = document.getElementById("star-canvas");
+	const ctx = canvas.getContext("2d");
+
+	let stars = [], bursts = [], rings = [];
+	let w, h;
+	let mouse = {x: null, y: null};
+
+	/* 夜间模式 */
+	const toggleBtn = document.getElementById("nightToggle");
+	toggleBtn.onclick = () => {
+		if (document.body.classList.contains("light")) {
+			document.body.classList.replace("light", "night");
+			toggleBtn.textContent = "☀️";
+		} else {
+			document.body.classList.replace("night", "light");
+			toggleBtn.textContent = "🌙";
+		}
+	};
+
+	/* 调整 Canvas */
+	function resize () {
+		w = canvas.width = window.innerWidth;
+		h = canvas.height = window.innerHeight;
+	}
+
+	window.onresize = resize;
+	resize();
+
+	/* 初始化星星 */
+	function initStars () {
+		stars = [];
+		for (let i = 0; i < 130; i++) {
+			stars.push({
+				x: Math.random() * w,
+				y: Math.random() * h,
+				r: Math.random() * 1.3 + 0.4,
+				dx: (Math.random() - 0.5) * 0.15,
+				dy: (Math.random() - 0.5) * 0.15,
+				color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea"
+			});
+		}
+	}
+
+	/* 鼠标吸引 */
+	window.addEventListener("mousemove", e => {
+		mouse.x = e.clientX;
+		mouse.y = e.clientY;
+	});
+	window.addEventListener("mouseleave", () => {
+		mouse.x = null;
+	});
+
+	/* 点击事件：星爆 + 波纹 */
+	window.addEventListener("mousedown", createBurst);
+	window.addEventListener("touchstart", e => {
+		const t = e.touches[0];
+		createBurst({clientX: t.clientX, clientY: t.clientY});
+	});
+
+	function createBurst (e) {
+		const x = e.clientX, y = e.clientY;
+
+		for (let i = 0; i < 14; i++) {
+			bursts.push({
+				x: x,
+				y: y,
+				r: Math.random() * 3 + 2,
+				dx: (Math.random() - 0.5) * 4,
+				dy: (Math.random() - 0.5) * 4,
+				life: 1,
+				color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea",
+				trail: []
+			});
+		}
+
+		rings.push({x: x, y: y, r: 0, alpha: 0.85});
+	}
+
+	/* 爆炸粒子 + 尾迹 */
+	function drawBursts () {
+		for (let i = bursts.length - 1; i >= 0; i--) {
+			let b = bursts[i];
+
+			b.trail.push({x: b.x, y: b.y, alpha: b.life});
+			if (b.trail.length > 10) b.trail.shift();
+
+			for (let t of b.trail.length ? b.trail : []) {
+				ctx.beginPath();
+				ctx.arc(t.x, t.y, 1.2, 0, Math.PI * 2);
+				ctx.fillStyle = b.color + Math.floor(t.alpha * 255).toString(16).padStart(2, "0");
+				ctx.fill();
+			}
+
+			ctx.beginPath();
+			ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+			ctx.fillStyle = b.color + Math.floor(b.life * 255).toString(16).padStart(2, "0");
+			ctx.fill();
+
+			b.x += b.dx;
+			b.y += b.dy;
+			b.dy += 0.03;
+			b.life -= 0.02;
+			b.r *= 0.97;
+
+			if (b.life <= 0 || b.r < 0.3) bursts.splice(i, 1);
+		}
+	}
+
+	/* 扩散光圈 */
+	function drawRings () {
+		for (let i = rings.length - 1; i >= 0; i--) {
+			let r = rings[i];
+
+			ctx.beginPath();
+			ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+			ctx.strokeStyle = "rgba(0,200,255," + r.alpha + ")";
+			ctx.lineWidth = 3;
+			ctx.stroke();
+
+			r.r += 2.3;
+			r.alpha -= 0.02;
+
+			if (r.alpha <= 0) rings.splice(i, 1);
+		}
+	}
+
+	/* 主循环 */
+	function draw () {
+		ctx.clearRect(0, 0, w, h);
+
+		for (let s of stars) {
+			ctx.beginPath();
+			ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+			ctx.fillStyle = s.color + "AA";
+			ctx.fill();
+
+			s.x += s.dx;
+			s.y += s.dy;
+
+			/* 鼠标吸引 */
+			if (mouse.x !== null) {
+				const dx = mouse.x - s.x;
+				const dy = mouse.y - s.y;
+				const dist = Math.sqrt(dx * dx + dy * dy);
+				if (dist < 150) {
+					s.x += dx * 0.015;
+					s.y += dy * 0.015;
+				}
+			}
+
+			if (s.x < 0 || s.x > w || s.y < 0 || s.y > h) {
+				s.x = Math.random() * w;
+				s.y = Math.random() * h;
+			}
+		}
+
+		drawBursts();
+		drawRings();
+
+		requestAnimationFrame(draw);
+	}
+
+	<!-- 汉堡按钮显示 -->
+	const hamburger = document.getElementById("hamburger");
+	const menuList = document.getElementById("menuList");
+
+	hamburger.addEventListener("click", () => {
+		menuList.classList.toggle("show");
+	});
+
+	initStars();
+	draw();
+</script>
+
+</body>
+</html>

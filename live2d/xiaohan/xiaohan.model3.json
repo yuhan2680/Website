@@ -1,0 +1,29 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "xiaohan .moc3",
+		"Textures": [
+			"xiaohan .8192/texture_00.png",
+			"xiaohan .8192/texture_01.png",
+			"xiaohan .8192/texture_02.png",
+			"xiaohan .8192/texture_03.png"
+		],
+		"Physics": "xiaohan .physics3.json",
+		"DisplayInfo": "xiaohan .cdi3.json"
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeROpen",
+				"ParamEyeLOpen"
+			]
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		}
+	]
+}

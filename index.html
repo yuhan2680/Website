@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>小涵Naiwenelの个人网站</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- 圆润字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+</head>
+
+<body class="light">
+
+  <!-- 星空背景 -->
+  <canvas id="star-canvas"></canvas>
+
+  <!-- 导航栏 -->
+  <nav class="menu-nav">
+    <div class="menu-container">
+
+      <!-- Logo -->
+      <div class="menu-logo"><a href="index.html">小涵Naiwenel</a></div>
+
+      <!-- 功能区域：导航栏和主题切换 -->
+      <div class="menu-function">
+        <!-- 汉堡按钮（移动端可见） -->
+        <div class="hamburger" id="hamburger">
+          ☰
+        </div>
+  
+        <!-- 导航菜单 -->
+        <ul class="menu-list" id="menuList">
+          <li><a href="index.html" class="menu-item active">首页</a></li>
+          <li><a href="blog.html" class="menu-item">博客列表</a></li>
+          <li><a href="about.html" class="menu-item">关于我</a></li>
+          <li><a href="friendlinks.html" class="menu-item">友情链接</a></li>
+        </ul>
+  
+        <!-- 夜间模式切换 -->
+        <div class="night-toggle" id="nightToggle">🌙</div>
+  
+        </div>
+      </div>
+  </nav>
+
+
+  <!-- Banner -->
+  <div class="banner">
+    <h1>欢迎来到小涵の个人网站 ✨</h1>
+    <p>个人势 Vup / 开源独立游戏开发者</p>
+  </div>
+  
+  <!-- 内容卡片 -->
+  <div class="section">
+    <h2><a class="post-title" href="donate.html">赞助作者</a></h2>
+  </div>
+
+  <!-- 内容卡片 -->
+  <div class="section">
+    <h2>📝 最新文章</h2>
+    <ul class="post-list">
+      <li>
+        <a class="post-title" href="posts/post1.html">第一篇文章</a>
+        <span class="post-date">2025-11-20</span>
+      </li>
+    </ul>
+  </div>
+
+    <!-- ===== 留言板 ===== -->
+  <div class="comment-container">
+    <h2 class="comment-title">💬 留言板</h2>
+
+    <!-- 输入框 -->
+    <div class="comment-input-card glass-box">
+      <input id="nickname" class="glass-input" placeholder="昵称（必填）">
+      <textarea id="comment" class="glass-textarea" placeholder="写下你的评论..."></textarea>
+      <button id="sendComment" class="glass-button">提交评论</button>
+    </div>
+
+    <!-- 评论列表 -->
+    <div id="commentList" class="comment-list glass-box">
+      正在加载评论...
+    </div>
+  </div>
+
+  <div id="backToTop">↑</div>
+
+  <!-- 星爆+波纹+尾迹 -->
+  <script>
+    const canvas = document.getElementById("star-canvas");
+    const ctx = canvas.getContext("2d");
+
+    let stars = [], bursts = [], rings = [];
+    let w, h;
+    let mouse = { x: null, y: null };
+
+    /* 夜间模式按钮 */
+    const toggleBtn = document.getElementById("nightToggle");
+    toggleBtn.onclick = () => {
+      if (document.body.classList.contains("light")) {
+        document.body.classList.replace("light", "night");
+        toggleBtn.textContent = "☀️";
+      } else {
+        document.body.classList.replace("night", "light");
+        toggleBtn.textContent = "🌙";
+      }
+    };
+
+    /* 画布缩放 */
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.onresize = resize;
+    resize();
+
+    /* 初始化星空粒子 */
+    function initStars() {
+      stars = [];
+      for (let i = 0; i < 130; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.3 + 0.4,
+          dx: (Math.random() - 0.5) * 0.15,
+          dy: (Math.random() - 0.5) * 0.15,
+          color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea"
+        });
+      }
+    }
+
+    /* 鼠标吸引 */
+    window.addEventListener("mousemove", e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener("mouseleave", () => {
+      mouse.x = null;
+    });
+
+    /* 点击事件：星爆 & 扩散波纹 */
+    window.addEventListener("mousedown", createBurst);
+    window.addEventListener("touchstart", e => {
+      const t = e.touches[0];
+      createBurst({ clientX: t.clientX, clientY: t.clientY });
+    });
+
+    function createBurst(e) {
+      const x = e.clientX, y = e.clientY;
+
+      for (let i = 0; i < 14; i++) {
+        bursts.push({
+          x: x,
+          y: y,
+          r: Math.random() * 3 + 2,
+          dx: (Math.random() - 0.5) * 4,
+          dy: (Math.random() - 0.5) * 4,
+          life: 1,
+          color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea",
+          trail: []
+        });
+      }
+
+      rings.push({ x: x, y: y, r: 0, alpha: 0.85 });
+    }
+
+    /* 爆炸粒子（含尾迹） */
+    function drawBursts() {
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        let b = bursts[i];
+
+        /* 尾迹点 */
+        b.trail.push({ x: b.x, y: b.y, alpha: b.life });
+        if (b.trail.length > 10) b.trail.shift();
+
+        for (let t of b.trail) {
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = b.color + Math.floor(t.alpha * 255).toString(16).padStart(2, "0");
+          ctx.fill();
+        }
+
+        /* 主粒子 */
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = b.color + Math.floor(b.life * 255).toString(16).padStart(2, "0");
+        ctx.fill();
+
+        b.x += b.dx;
+        b.y += b.dy;
+        b.dy += 0.03;
+        b.life -= 0.02;
+        b.r *= 0.97;
+
+        if (b.life <= 0 || b.r < 0.3) bursts.splice(i, 1);
+      }
+    }
+
+    /* 音游扩散光圈 */
+    function drawRings() {
+      for (let i = rings.length - 1; i >= 0; i--) {
+        let r = rings[i];
+
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(0,200,255," + r.alpha + ")";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        r.r += 2.3;
+        r.alpha -= 0.02;
+
+        if (r.alpha <= 0) rings.splice(i, 1);
+      }
+    }
+
+    /* 主绘制循环 */
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+
+      /* 星空粒子 */
+      for (let s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = s.color + "AA";
+        ctx.fill();
+
+        s.x += s.dx;
+        s.y += s.dy;
+
+        /* 鼠标吸引 */
+        if (mouse.x !== null) {
+          const dx = mouse.x - s.x;
+          const dy = mouse.y - s.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            s.x += dx * 0.015;
+            s.y += dy * 0.015;
+          }
+        }
+
+        /* 超出重置 */
+        if (s.x < 0 || s.x > w || s.y < 0 || s.y > h) {
+          s.x = Math.random() * w;
+          s.y = Math.random() * h;
+        }
+      }
+
+      drawBursts(); /* 爆炸 */
+      drawRings();  /* 波纹 */
+
+      requestAnimationFrame(draw);
+    }
+
+    
+    /* ===== 返回顶部按钮 ===== */
+    const backToTop = document.getElementById("backToTop");
+
+    // 监听滚动显示按钮
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 200) {
+        backToTop.classList.add("show");
+      } else {
+        backToTop.classList.remove("show");
+      }
+    });
+
+    // 点击平滑回顶部
+    backToTop.onclick = () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    };
+
+    // 获取当前文章 ID：例如 /posts/post0.html → post0
+    let postId = location.pathname.split("/").pop().replace(".html", "");
+    if(!postId){
+      postId = 'index';
+    }
+    // 最小提交间隔（毫秒）
+    const MIN_INTERVAL = 3000;
+    let lastSubmitTime = 0;
+
+    function loadComments() {
+      fetch(`/api/comments?post=${postId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.length) {
+            document.getElementById("commentList").innerHTML = "暂无评论";
+            return;
+          }
+
+          document.getElementById("commentList").innerHTML = data.map(c => `
+            <div class="comment-item">
+              <div class="comment-nick">${c.nickname}</div>
+              <div class="comment-content">${c.content}</div>
+              <div class="comment-time">${c.created_at.replace('T',' ').slice(0,16)}</div>
+            </div>
+          `).join("");
+        });
+    }
+
+    document.getElementById("sendComment").onclick = () => {
+      const now = Date.now();
+      // ① 防止快速连点（客户端）
+      if (now - lastSubmitTime < MIN_INTERVAL) {
+        alert("提交太快，请稍后再试！");
+        return;
+      }
+
+      const nickname = document.getElementById("nickname").value.trim();
+      const content = document.getElementById("comment").value.trim();
+
+      // ② 空值校验
+      if (!nickname || !content) {
+        alert("昵称和内容不能为空！");
+        return;
+      }
+
+      // ③ 长度校验（前端）
+      if (nickname.length > 20) {
+        alert("昵称长度不能超过 20 字！");
+        return;
+      }
+      if (content.length > 500) {
+        alert("评论内容不能超过 500 字！");
+        return;
+      }
+
+      // ④ 禁用按钮防止连点
+      const btn = document.getElementById("sendComment");
+      btn.disabled = true;
+      btn.innerText = "提交中…";
+
+      fetch(`/api/comments?post=${postId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          nickname,
+          content
+        })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          alert(res.msg || "提交失败，请稍后再试");
+          return;
+        }
+
+        // 重置输入框
+        document.getElementById("comment").value = "";
+        lastSubmitTime = Date.now();
+        loadComments();
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerText = "提交评论";
+      });
+    };
+
+    <!-- 汉堡按钮显示 -->
+    const hamburger = document.getElementById("hamburger");
+    const menuList = document.getElementById("menuList");
+
+    hamburger.addEventListener("click", () => {
+      menuList.classList.toggle("show");
+    });
+
+
+
+    // 初次加载评论
+    loadComments();
+
+    initStars();
+    draw();
+  </script>
+  
+<!-- Live2D 控制库 -->
+<script src="https://l2dwidget.js.org/lib/L2Dwidget.min.js" crossorigin="anonymous"></script>
+<script>
+  window.addEventListener('load', function () {
+    L2Dwidget.init({
+      model: {
+        jsonPath: "/live2d/xiaohan/xiaohan.model3.json",
+        scale: 1
+      },
+      display: {
+        position: "left",  // 放左侧
+        width: 260,        // 模型渲染宽度
+        height: 360,       // 模型渲染高度
+        hOffset: 0,        // 水平微调（+向右，-向左）
+        vOffset: -40       // 垂直微调（-往上提一点，避免贴太底）
+      },
+      mobile: {
+        show: true,        // 是否在手机上也显示
+        scale: 0.5
+      },
+      react: {
+        opacity: 0.9       // 初始透明度（0~1）
+      }
+    });
+  });
+</script>
+
+
+</body>
+</html>

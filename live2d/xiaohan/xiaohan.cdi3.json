@@ -1,0 +1,577 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "Param10",
+			"GroupId": "ParamGroup4",
+			"Name": "0.0"
+		},
+		{
+			"Id": "Param11",
+			"GroupId": "ParamGroup4",
+			"Name": "-.-"
+		},
+		{
+			"Id": "Param16",
+			"GroupId": "ParamGroup4",
+			"Name": ">.<"
+		},
+		{
+			"Id": "Param17",
+			"GroupId": "ParamGroup4",
+			"Name": "evil"
+		},
+		{
+			"Id": "Param18",
+			"GroupId": "ParamGroup4",
+			"Name": "bag"
+		},
+		{
+			"Id": "Param4",
+			"GroupId": "ParamGroup4",
+			"Name": "hair"
+		},
+		{
+			"Id": "Param2",
+			"GroupId": "ParamGroup4",
+			"Name": "cloth"
+		},
+		{
+			"Id": "Param9",
+			"GroupId": "ParamGroup4",
+			"Name": "headwear_disappear"
+		},
+		{
+			"Id": "Param8",
+			"GroupId": "ParamGroup4",
+			"Name": "headwear_switch"
+		},
+		{
+			"Id": "Param",
+			"GroupId": "ParamGroup4",
+			"Name": "animation_switch1"
+		},
+		{
+			"Id": "Param3",
+			"GroupId": "ParamGroup4",
+			"Name": "cat_switch"
+		},
+		{
+			"Id": "Param7",
+			"GroupId": "ParamGroup4",
+			"Name": "White_stocking_switch"
+		},
+		{
+			"Id": "ParamEyeROpen",
+			"GroupId": "ParamGroup2",
+			"Name": "right_eye_open_close"
+		},
+		{
+			"Id": "ParamEyeRSmile",
+			"GroupId": "ParamGroup2",
+			"Name": "right_eye_smile"
+		},
+		{
+			"Id": "ParamEyeLOpen",
+			"GroupId": "ParamGroup2",
+			"Name": "left_eye_open_close"
+		},
+		{
+			"Id": "ParamEyeLSmile",
+			"GroupId": "ParamGroup2",
+			"Name": "left_eye_smile"
+		},
+		{
+			"Id": "ParamEyeBallX",
+			"GroupId": "ParamGroup2",
+			"Name": "eye_X"
+		},
+		{
+			"Id": "ParamEyeBallY",
+			"GroupId": "ParamGroup2",
+			"Name": "eye_Y"
+		},
+		{
+			"Id": "ParamMouthForm",
+			"GroupId": "ParamGroup2",
+			"Name": "mouse_shape"
+		},
+		{
+			"Id": "ParamMouthOpenY",
+			"GroupId": "ParamGroup2",
+			"Name": "mouse_open_close"
+		},
+		{
+			"Id": "ParamAngleX",
+			"GroupId": "ParamGroup",
+			"Name": "angle_X"
+		},
+		{
+			"Id": "ParamAngleY",
+			"GroupId": "ParamGroup",
+			"Name": "angle_Y"
+		},
+		{
+			"Id": "ParamAngleZ",
+			"GroupId": "ParamGroup",
+			"Name": "angle_Z"
+		},
+		{
+			"Id": "ParamBodyAngleY1",
+			"GroupId": "ParamGroup3",
+			"Name": "Y1"
+		},
+		{
+			"Id": "ParamBodyAngleX",
+			"GroupId": "ParamGroup3",
+			"Name": "body_roatation_X"
+		},
+		{
+			"Id": "ParamBodyAngleY",
+			"GroupId": "ParamGroup3",
+			"Name": "body_roatation_Y"
+		},
+		{
+			"Id": "ParamBodyAngleY2",
+			"GroupId": "ParamGroup3",
+			"Name": "body_roatation_Y*1"
+		},
+		{
+			"Id": "ParamBodyAngleZ",
+			"GroupId": "ParamGroup3",
+			"Name": "body_roatation_Z"
+		},
+		{
+			"Id": "ParamBodyAngleZ1",
+			"GroupId": "ParamGroup3",
+			"Name": "body Z1"
+		},
+		{
+			"Id": "ParamBodyAngleZ1_mix",
+			"GroupId": "ParamGroup3",
+			"Name": "body Z1"
+		},
+		{
+			"Id": "ParamBodyAngleZ2",
+			"GroupId": "ParamGroup3",
+			"Name": "body Z2"
+		},
+		{
+			"Id": "ParamBodyAngleZ2_mix",
+			"GroupId": "ParamGroup3",
+			"Name": "body Z2"
+		},
+		{
+			"Id": "ParamBreath",
+			"GroupId": "ParamGroup3",
+			"Name": "breathe"
+		},
+		{
+			"Id": "zs1",
+			"GroupId": "ParamGroup6",
+			"Name": "right_hand_1"
+		},
+		{
+			"Id": "zs2",
+			"GroupId": "ParamGroup6",
+			"Name": "right_hand_2"
+		},
+		{
+			"Id": "zs3",
+			"GroupId": "ParamGroup6",
+			"Name": "right_hand_3"
+		},
+		{
+			"Id": "zs4",
+			"GroupId": "ParamGroup6",
+			"Name": "left_hand_1"
+		},
+		{
+			"Id": "zs5",
+			"GroupId": "ParamGroup6",
+			"Name": "left_hand_2"
+		},
+		{
+			"Id": "zs6",
+			"GroupId": "ParamGroup6",
+			"Name": "left_hand_3"
+		},
+		{
+			"Id": "Param56",
+			"GroupId": "ParamGroup6",
+			"Name": "dressx1"
+		},
+		{
+			"Id": "Param57",
+			"GroupId": "ParamGroup6",
+			"Name": "dressx2"
+		},
+		{
+			"Id": "Param54",
+			"GroupId": "ParamGroup6",
+			"Name": "dressy1"
+		},
+		{
+			"Id": "Param55",
+			"GroupId": "ParamGroup6",
+			"Name": "dressy2"
+		},
+		{
+			"Id": "Param5",
+			"GroupId": "ParamGroup6",
+			"Name": "L1"
+		},
+		{
+			"Id": "Param12",
+			"GroupId": "ParamGroup6",
+			"Name": "L2"
+		},
+		{
+			"Id": "Param13",
+			"GroupId": "ParamGroup6",
+			"Name": "L3"
+		},
+		{
+			"Id": "Param6",
+			"GroupId": "ParamGroup6",
+			"Name": "R1"
+		},
+		{
+			"Id": "Param14",
+			"GroupId": "ParamGroup6",
+			"Name": "R2"
+		},
+		{
+			"Id": "Param15",
+			"GroupId": "ParamGroup6",
+			"Name": "R3"
+		},
+		{
+			"Id": "Param32",
+			"GroupId": "ParamGroup6",
+			"Name": "back_hair_R1"
+		},
+		{
+			"Id": "Param33",
+			"GroupId": "ParamGroup6",
+			"Name": "back_hair_R2"
+		},
+		{
+			"Id": "Param34",
+			"GroupId": "ParamGroup6",
+			"Name": "back_hair_L1"
+		},
+		{
+			"Id": "Param35",
+			"GroupId": "ParamGroup6",
+			"Name": "back_hair_L2"
+		},
+		{
+			"Id": "Param_Angle_Rotation_1_ArtMesh121",
+			"GroupId": "ParamGroup5",
+			"Name": "[0]tail"
+		},
+		{
+			"Id": "Param_Angle_Rotation_2_ArtMesh121",
+			"GroupId": "ParamGroup5",
+			"Name": "[1]tail"
+		},
+		{
+			"Id": "Param_Angle_Rotation_3_ArtMesh121",
+			"GroupId": "ParamGroup5",
+			"Name": "[2]tail"
+		},
+		{
+			"Id": "Param_Angle_Rotation_4_ArtMesh121",
+			"GroupId": "ParamGroup5",
+			"Name": "[3]tail"
+		},
+		{
+			"Id": "Param_Angle_Rotation_5_ArtMesh121",
+			"GroupId": "ParamGroup5",
+			"Name": "[4]tail"
+		},
+		{
+			"Id": "Param_Angle_Rotation_6_ArtMesh121",
+			"GroupId": "ParamGroup5",
+			"Name": "[5]tail"
+		},
+		{
+			"Id": "Param_Angle_Rotation_7_ArtMesh121",
+			"GroupId": "ParamGroup5",
+			"Name": "[6]tail"
+		}
+	],
+	"ParameterGroups": [
+		{
+			"Id": "ParamGroup4",
+			"GroupId": "",
+			"Name": "button-switch"
+		},
+		{
+			"Id": "ParamGroup2",
+			"GroupId": "",
+			"Name": "face"
+		},
+		{
+			"Id": "ParamGroup",
+			"GroupId": "",
+			"Name": "nine_direction"
+		},
+		{
+			"Id": "ParamGroup3",
+			"GroupId": "",
+			"Name": "rotation"
+		},
+		{
+			"Id": "ParamGroup6",
+			"GroupId": "",
+			"Name": "physic"
+		},
+		{
+			"Id": "ParamGroup5",
+			"GroupId": "",
+			"Name": "tail"
+		}
+	],
+	"Parts": [
+		{
+			"Id": "Part52",
+			"Name": "headwear"
+		},
+		{
+			"Id": "Part3",
+			"Name": "eyebrows_1"
+		},
+		{
+			"Id": "Part4",
+			"Name": "eyebrows_2"
+		},
+		{
+			"Id": "Part53",
+			"Name": "hair_1"
+		},
+		{
+			"Id": "Part5",
+			"Name": "headwear_1_shade"
+		},
+		{
+			"Id": "Part8",
+			"Name": "head"
+		},
+		{
+			"Id": "Part18",
+			"Name": "shoes"
+		},
+		{
+			"Id": "Part19",
+			"Name": "cloth_1"
+		},
+		{
+			"Id": "Part25",
+			"Name": "cloth_2"
+		},
+		{
+			"Id": "Part38",
+			"Name": "body"
+		},
+		{
+			"Id": "Part41",
+			"Name": "cloth_1_back"
+		},
+		{
+			"Id": "Part42",
+			"Name": "cloth_2_back"
+		},
+		{
+			"Id": "Part54",
+			"Name": "leg_R"
+		},
+		{
+			"Id": "Part43",
+			"Name": "shoes_back"
+		},
+		{
+			"Id": "Part44",
+			"Name": "headwear_1_shade"
+		},
+		{
+			"Id": "Part45",
+			"Name": "back_hair_1"
+		},
+		{
+			"Id": "Part48",
+			"Name": "back_hair_2"
+		},
+		{
+			"Id": "Part",
+			"Name": "headwear_1"
+		},
+		{
+			"Id": "Part2",
+			"Name": "headwear_2"
+		},
+		{
+			"Id": "Part6",
+			"Name": "hair_1_front"
+		},
+		{
+			"Id": "Part7",
+			"Name": "hair_2_front"
+		},
+		{
+			"Id": "Part9",
+			"Name": "face"
+		},
+		{
+			"Id": "Part14",
+			"Name": "shade"
+		},
+		{
+			"Id": "Part15",
+			"Name": "blush"
+		},
+		{
+			"Id": "Part16",
+			"Name": "head"
+		},
+		{
+			"Id": "Part17",
+			"Name": "ear"
+		},
+		{
+			"Id": "Part20",
+			"Name": "collar"
+		},
+		{
+			"Id": "Part21",
+			"Name": "coat_main"
+		},
+		{
+			"Id": "Part23",
+			"Name": "dress"
+		},
+		{
+			"Id": "Part22",
+			"Name": "tie"
+		},
+		{
+			"Id": "Part24",
+			"Name": "shade"
+		},
+		{
+			"Id": "Part26",
+			"Name": "animation_2"
+		},
+		{
+			"Id": "Part29",
+			"Name": "bow"
+		},
+		{
+			"Id": "Part30",
+			"Name": "bow_shade"
+		},
+		{
+			"Id": "Part31",
+			"Name": "collar"
+		},
+		{
+			"Id": "Part32",
+			"Name": "backpack"
+		},
+		{
+			"Id": "Part33",
+			"Name": "animation_2_shade"
+		},
+		{
+			"Id": "Part34",
+			"Name": "bow_shade"
+		},
+		{
+			"Id": "Part35",
+			"Name": "dress_main"
+		},
+		{
+			"Id": "Part36",
+			"Name": "rotation_2"
+		},
+		{
+			"Id": "Part37",
+			"Name": "sock"
+		},
+		{
+			"Id": "Part39",
+			"Name": "neck_shoulders"
+		},
+		{
+			"Id": "Part40",
+			"Name": "hand"
+		},
+		{
+			"Id": "Part46",
+			"Name": "left_1"
+		},
+		{
+			"Id": "Part47",
+			"Name": "right_1"
+		},
+		{
+			"Id": "Part49",
+			"Name": "left_1"
+		},
+		{
+			"Id": "Part50",
+			"Name": "right_1"
+		},
+		{
+			"Id": "Part10",
+			"Name": "eye_left"
+		},
+		{
+			"Id": "Part11",
+			"Name": "eye_right"
+		},
+		{
+			"Id": "Part12",
+			"Name": "mouse"
+		},
+		{
+			"Id": "Part51",
+			"Name": "front_hair"
+		},
+		{
+			"Id": "Part27",
+			"Name": "cat_claw"
+		},
+		{
+			"Id": "Part28",
+			"Name": "cat"
+		},
+		{
+			"Id": "ArtMesh121_Skinning",
+			"Name": "tail_skin"
+		},
+		{
+			"Id": "Part55",
+			"Name": "tail_rotation"
+		},
+		{
+			"Id": "Part13",
+			"Name": "mouse_inside"
+		}
+	],
+	"CombinedParameters": [
+		[
+			"ParamEyeBallX",
+			"ParamEyeBallY"
+		],
+		[
+			"ParamMouthForm",
+			"ParamMouthOpenY"
+		],
+		[
+			"ParamAngleX",
+			"ParamAngleY"
+		]
+	]
+}
