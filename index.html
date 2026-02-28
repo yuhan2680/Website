@@ -415,6 +415,7 @@
   const loadScript = (src) => new Promise((resolve, reject) => {
     const script = document.createElement("script");
     script.src = src;
+    script.async = true;
     script.onload = () => resolve(src);
     script.onerror = () => reject(new Error(`脚本加载失败: ${src}`));
     document.head.appendChild(script);
@@ -426,13 +427,47 @@
     for (const src of sources) {
       try {
         await loadScript(src);
+        console.info(`[Live2D] ${name} 加载成功: ${src}`);
         return src;
       } catch (error) {
         lastError = error;
+        console.warn(`[Live2D] ${name} 加载失败，尝试下一个镜像: ${src}`);
       }
     }
 
     throw new Error(`${name} 加载失败（所有镜像均不可用）: ${lastError?.message || "未知错误"}`);
+  };
+
+  // Live2D 运行库本地化：避免外链在不同网络环境下失败
+  const runtimeSources = {
+    pixi: ["/live2d/libs/pixi.min.js"],
+    cubismCore: ["/live2d/libs/live2dcubismcore.min.js"],
+    live2dDisplay: ["/live2d/libs/cubism4.min.js"]
+  };
+
+  const showLive2DStatus = (message) => {
+    const old = document.getElementById("live2d-status");
+    if (old) old.remove();
+
+    const badge = document.createElement("div");
+    badge.id = "live2d-status";
+    badge.textContent = message;
+    Object.assign(badge.style, {
+      position: "fixed",
+      left: "12px",
+      bottom: "12px",
+      zIndex: "1200",
+      fontSize: "12px",
+      lineHeight: "1.4",
+      padding: "6px 8px",
+      borderRadius: "8px",
+      color: "#fff",
+      background: "rgba(220, 53, 69, 0.88)",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+      pointerEvents: "none"
+    });
+
+    document.body.appendChild(badge);
   };
 
   window.addEventListener("load", async () => {
@@ -443,38 +478,42 @@
     if (isMobile) return;
 
     try {
-      await loadScriptWithFallback([
-        "https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js",
-        "https://unpkg.com/pixi.js@6.5.10/dist/browser/pixi.min.js"
-      ], "PIXI");
-
-      await loadScriptWithFallback([
-        "https://cdn.jsdelivr.net/npm/live2dcubismcore@4.2.0/dist/live2dcubismcore.min.js",
-        "https://unpkg.com/live2dcubismcore@4.2.0/dist/live2dcubismcore.min.js"
-      ], "Live2D Cubism Core");
-
-      await loadScriptWithFallback([
-        "https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js",
-        "https://unpkg.com/pixi-live2d-display@0.4.0/dist/cubism4.min.js"
-      ], "pixi-live2d-display");
+      await loadScriptWithFallback(runtimeSources.pixi, "PIXI");
+      await loadScriptWithFallback(runtimeSources.cubismCore, "Live2D Cubism Core");
+      await loadScriptWithFallback(runtimeSources.live2dDisplay, "pixi-live2d-display");
     } catch (error) {
       console.error("Live2D 运行库加载失败：", error);
+      showLive2DStatus("Live2D 加载失败（运行库不可用）");
       return;
     }
 
     if (!window.PIXI || !PIXI.live2d || !window.Live2DCubismCore) {
       console.error("Live2D 运行库不完整：请检查 CDN 是否可访问。");
+      showLive2DStatus("Live2D 加载失败（运行库不完整）");
       return;
     }
 
-    const app = new PIXI.Application({
-      width: 260,
-      height: 360,
-      transparent: true,
-      antialias: true,
-      autoDensity: true,
-      resolution: window.devicePixelRatio || 1
-    });
+    let app;
+    try {
+      app = new PIXI.Application({
+        width: 260,
+        height: 360,
+        transparent: true,
+        antialias: true,
+        autoDensity: true,
+        resolution: window.devicePixelRatio || 1
+      });
+    } catch (error) {
+      console.error("Live2D 渲染器初始化失败：", error);
+      showLive2DStatus("Live2D 加载失败（浏览器不支持 WebGL）");
+      return;
+    }
+
+    if (app.renderer?.type !== PIXI.RENDERER_TYPE.WEBGL) {
+      console.error("Live2D 需要 WebGL 渲染器，当前不可用。");
+      showLive2DStatus("Live2D 加载失败（WebGL 不可用）");
+      return;
+    }
 
     Object.assign(app.view.style, {
       position: "fixed",
@@ -494,12 +533,17 @@
       model.anchor.set(0, 1);
       model.position.set(0, app.renderer.height);
 
-      const scaleX = app.renderer.width / model.width;
-      const scaleY = app.renderer.height / model.height;
-      model.scale.set(Math.min(scaleX, scaleY) * 0.95);
+      const baseWidth = model.width || 1000;
+      const baseHeight = model.height || 1000;
+      const scaleX = app.renderer.width / baseWidth;
+      const scaleY = app.renderer.height / baseHeight;
+      const fitScale = Math.min(scaleX, scaleY) * 0.95;
+      model.scale.set(Math.max(0.08, Math.min(fitScale, 1.2)));
+
       app.stage.addChild(model);
     } catch (error) {
       console.error("Live2D 模型加载失败：", error);
+      showLive2DStatus("Live2D 加载失败（模型资源异常）");
     }
   });
 </script>
