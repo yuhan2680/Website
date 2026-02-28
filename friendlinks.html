@@ -9,9 +9,6 @@
 	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="style.css"/>
 
-	<!-- 友链加载 -->
-	<script src="./functions/friendlinks/data.js"></script>
-	<script src="./functions/friendlinks/render.js"></script>
 	<style>
 		:root {
 			--title-color: #2970ea;
@@ -136,32 +133,11 @@
 	<h2>🌟 朋友们的小站</h2>
 
 	<div class="friend-container">
-		<a class="friend-card" href="https://www.twis.uk" target="_blank">
-			<img src="https://github.com/Twisuki.png" alt="Twisuki">
+		<a class="friend-card" href="https://naiwenel.com/" target="_blank">
+			<img src="https://github.com/yuhan2680.png" alt="Twisuki">
 			<div class="friend-content">
-				<div class="friend-title">苏阳 Twisuki</div>
-				<div class="friend-desc">一只喜欢到处贴贴的小猫娘~</div>
-			</div>
-		</a>
-		<a class="friend-card" href="https://www.twis.uk" target="_blank">
-			<img src="https://github.com/Twisuki.png" alt="Twisuki">
-			<div class="friend-content">
-				<div class="friend-title">苏阳 Twisuki</div>
-				<div class="friend-desc">一只喜欢到处贴贴的小猫娘~</div>
-			</div>
-		</a>
-		<a class="friend-card" href="https://www.twis.uk" target="_blank">
-			<img src="https://github.com/Twisuki.png" alt="Twisuki">
-			<div class="friend-content">
-				<div class="friend-title">苏阳 Twisuki</div>
-				<div class="friend-desc">一只喜欢到处贴贴的小猫娘~</div>
-			</div>
-		</a>
-		<a class="friend-card" href="https://www.twis.uk" target="_blank">
-			<img src="https://github.com/Twisuki.png" alt="Twisuki">
-			<div class="friend-content">
-				<div class="friend-title">苏阳 Twisuki</div>
-				<div class="friend-desc">一只喜欢到处贴贴的小猫娘~</div>
+				<div class="friend-title">友联信息加载失败...</div>
+				<div class="friend-desc">Failed to loading friendlinks ...</div>
 			</div>
 		</a>
 	</div>
@@ -342,6 +318,41 @@
 
 	initStars();
 	draw();
+</script>
+
+<script>
+  <!-- 友链数据 -->
+	const friendLinks = [
+		{
+			name: "yuhan2680",
+			avatar: "https://github.com/yuhan2680.png",
+			desc: "GitHub 主页",
+			link: "https://github.com/yuhan2680",
+		},
+		{
+			name: "苏阳 Twisuki",
+			avatar: "https://github.com/Twisuki.png",
+			desc: "一只喜欢到处贴贴的小猫娘~",
+			link: "https://www.twis.uk"
+		}
+	]
+
+	document.addEventListener("DOMContentLoaded", () => {
+		const container = document.querySelector(".friend-container");
+
+		const linkList = friendLinks.map(item => `
+	  <a class="friend-card" href="${item.link}" target="_blank">
+      <img src="${item.avatar}" alt="Twisuki">
+      <div class="friend-content">
+        <div class="friend-title">${item.name}</div>
+        <div class="friend-desc">${item.desc}</div>
+      </div>
+    </a>
+  `);
+
+		container.innerHTML = "";
+		container.innerHTML = linkList.join("");
+	})
 </script>
 
 </body>
