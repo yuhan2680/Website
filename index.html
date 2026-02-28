@@ -557,6 +557,62 @@
 
       updateFocus(window.innerWidth / 2, window.innerHeight / 2);
 
+      const skinStorageKey = "live2d-skin";
+      const getSkinValue = (skinName) => skinName === "green" ? 1 : 0;
+      let currentSkin = localStorage.getItem(skinStorageKey) || "green";
+
+      const skinButton = document.createElement("button");
+      skinButton.id = "live2d-skin-toggle";
+      skinButton.type = "button";
+      skinButton.ariaLabel = "切换 Live2D 皮肤";
+      Object.assign(skinButton.style, {
+        position: "fixed",
+        left: "14px",
+        bottom: "14px",
+        zIndex: "1100",
+        width: "34px",
+        height: "34px",
+        border: "2px solid rgba(255, 255, 255, 0.9)",
+        borderRadius: "50%",
+        cursor: "pointer",
+        boxShadow: "0 3px 10px rgba(0,0,0,0.25)"
+      });
+
+      const updateSkinButton = (skinName) => {
+        skinButton.style.background = skinName === "green"
+          ? "linear-gradient(135deg, #4fd66f, #24a148)"
+          : "linear-gradient(135deg, #52b7ff, #2563eb)";
+        skinButton.title = `当前皮肤：${skinName === "green" ? "绿色" : "蓝色"}（点击切换）`;
+      };
+
+      const applySkin = (skinName) => {
+        const coreModel = model.internalModel?.coreModel;
+        if (!coreModel || typeof coreModel.setParameterValueById !== "function") {
+          return;
+        }
+
+        const skinValue = getSkinValue(skinName);
+        coreModel.setParameterValueById("Param2", skinValue);
+        coreModel.setParameterValueById("Param4", skinValue);
+      };
+
+      const switchSkin = (skinName) => {
+        currentSkin = skinName;
+        localStorage.setItem(skinStorageKey, skinName);
+        applySkin(skinName);
+        updateSkinButton(skinName);
+      };
+
+      skinButton.addEventListener("click", () => {
+        switchSkin(currentSkin === "green" ? "blue" : "green");
+      });
+      document.body.appendChild(skinButton);
+
+      app.ticker.add(() => {
+        applySkin(currentSkin);
+      });
+
+      switchSkin(currentSkin);
       app.stage.addChild(model);
     } catch (error) {
       console.error("Live2D 模型加载失败：", error);
