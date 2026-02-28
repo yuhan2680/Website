@@ -548,9 +548,10 @@
 
       const updateFocus = (x, y) => {
         if (typeof model.focus !== "function") return;
-        const normalizedX = (x / window.innerWidth) * 2 - 1;
-        const normalizedY = (y / window.innerHeight) * 2 - 1;
-        model.focus(normalizedX, -normalizedY);
+
+        const focusX = Math.max(0, Math.min(1, x / window.innerWidth));
+        const focusY = Math.max(0, Math.min(1, y / window.innerHeight));
+        model.focus(focusX, focusY);
       };
 
       window.addEventListener("mousemove", (event) => {
