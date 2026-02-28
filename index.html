@@ -464,7 +464,7 @@
       color: "#fff",
       background: "rgba(220, 53, 69, 0.88)",
       boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
-      pointerEvents: "auto"
+      pointerEvents: "none"
     });
 
     document.body.appendChild(badge);
@@ -525,13 +525,13 @@
       width: `${viewWidth}px`,
       height: `${viewHeight}px`,
       zIndex: "1000",
-      pointerEvents: "auto"
+      pointerEvents: "none"
     });
     document.body.appendChild(app.view);
 
     try {
       const model = await PIXI.live2d.Live2DModel.from(modelJsonPath, {
-        autoInteract: true
+        autoInteract: false
       });
 
       model.scale.set(1);
@@ -546,25 +546,16 @@
         app.renderer.height - (bounds.y + bounds.height) * model.scale.y
       );
 
-      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
       const updateFocus = (clientX, clientY) => {
         if (typeof model.focus !== "function") return;
-
-        const rect = app.view.getBoundingClientRect();
-        const localX = clamp(clientX - rect.left, 0, rect.width);
-        const localY = clamp(clientY - rect.top, 0, rect.height);
-
-        const focusX = (localX / Math.max(rect.width, 1)) * 2 - 1;
-        const focusY = (localY / Math.max(rect.height, 1)) * 2 - 1;
-        model.focus(clamp(focusX, -1, 1), clamp(focusY, -1, 1));
+        model.focus(clientX, clientY);
       };
 
       window.addEventListener("mousemove", (event) => {
         updateFocus(event.clientX, event.clientY);
       }, { passive: true });
 
-      const rect = app.view.getBoundingClientRect();
-      updateFocus(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      updateFocus(window.innerWidth / 2, window.innerHeight / 2);
 
       app.stage.addChild(model);
     } catch (error) {
