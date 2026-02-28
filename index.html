@@ -393,7 +393,7 @@
       });
     };
 
-    <!-- 汉堡按钮显示 -->
+    // 汉堡按钮显示
     const hamburger = document.getElementById("hamburger");
     const menuList = document.getElementById("menuList");
 
@@ -410,32 +410,100 @@
     draw();
   </script>
   
-<!-- Live2D 控制库 -->
-<script src="https://l2dwidget.js.org/lib/L2Dwidget.min.js" crossorigin="anonymous"></script>
+<!-- Live2D（Cubism 3/4 模型） -->
 <script>
-  window.addEventListener('load', function () {
-    L2Dwidget.init({
-      model: {
-        jsonPath: "/live2d/小涵_vts/小涵 .model3.json",
-        scale: 1
-      },
-      display: {
-        position: "left",  // 放左侧
-        width: 260,        // 模型渲染宽度
-        height: 360,       // 模型渲染高度
-        hOffset: 0,        // 水平微调（+向右，-向左）
-        vOffset: -40       // 垂直微调（-往上提一点，避免贴太底）
-      },
-      mobile: {
-        show: true,        // 是否在手机上也显示
-        scale: 0.5
-      },
-      react: {
-        opacity: 0.9       // 初始透明度（0~1）
+  const loadScript = (src) => new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve(src);
+    script.onerror = () => reject(new Error(`脚本加载失败: ${src}`));
+    document.head.appendChild(script);
+  });
+
+  const loadScriptWithFallback = async (sources, name) => {
+    let lastError = null;
+
+    for (const src of sources) {
+      try {
+        await loadScript(src);
+        return src;
+      } catch (error) {
+        lastError = error;
       }
+    }
+
+    throw new Error(`${name} 加载失败（所有镜像均不可用）: ${lastError?.message || "未知错误"}`);
+  };
+
+  window.addEventListener("load", async () => {
+    const modelJsonPath = encodeURI("/live2d/小涵_vts/小涵 .model3.json");
+    const isMobile = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
+
+    // 手机端默认不渲染，避免遮挡正文内容
+    if (isMobile) return;
+
+    try {
+      await loadScriptWithFallback([
+        "https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js",
+        "https://unpkg.com/pixi.js@6.5.10/dist/browser/pixi.min.js"
+      ], "PIXI");
+
+      await loadScriptWithFallback([
+        "https://cdn.jsdelivr.net/npm/live2dcubismcore@4.2.0/dist/live2dcubismcore.min.js",
+        "https://unpkg.com/live2dcubismcore@4.2.0/dist/live2dcubismcore.min.js"
+      ], "Live2D Cubism Core");
+
+      await loadScriptWithFallback([
+        "https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js",
+        "https://unpkg.com/pixi-live2d-display@0.4.0/dist/cubism4.min.js"
+      ], "pixi-live2d-display");
+    } catch (error) {
+      console.error("Live2D 运行库加载失败：", error);
+      return;
+    }
+
+    if (!window.PIXI || !PIXI.live2d || !window.Live2DCubismCore) {
+      console.error("Live2D 运行库不完整：请检查 CDN 是否可访问。");
+      return;
+    }
+
+    const app = new PIXI.Application({
+      width: 260,
+      height: 360,
+      transparent: true,
+      antialias: true,
+      autoDensity: true,
+      resolution: window.devicePixelRatio || 1
     });
+
+    Object.assign(app.view.style, {
+      position: "fixed",
+      left: "0",
+      bottom: "0",
+      width: "260px",
+      height: "360px",
+      zIndex: "1000",
+      pointerEvents: "none"
+    });
+    document.body.appendChild(app.view);
+
+    try {
+      const model = await PIXI.live2d.Live2DModel.from(modelJsonPath, {
+        autoInteract: false
+      });
+      model.anchor.set(0, 1);
+      model.position.set(0, app.renderer.height);
+
+      const scaleX = app.renderer.width / model.width;
+      const scaleY = app.renderer.height / model.height;
+      model.scale.set(Math.min(scaleX, scaleY) * 0.95);
+      app.stage.addChild(model);
+    } catch (error) {
+      console.error("Live2D 模型加载失败：", error);
+    }
   });
 </script>
+
 
 
 </body>
