@@ -493,11 +493,14 @@
       return;
     }
 
+    const viewWidth = Math.max(280, Math.min(380, Math.floor(window.innerWidth * 0.3)));
+    const viewHeight = Math.max(420, Math.min(640, Math.floor(window.innerHeight * 0.72)));
+
     let app;
     try {
       app = new PIXI.Application({
-        width: 260,
-        height: 360,
+        width: viewWidth,
+        height: viewHeight,
         transparent: true,
         antialias: true,
         autoDensity: true,
@@ -517,10 +520,10 @@
 
     Object.assign(app.view.style, {
       position: "fixed",
-      left: "0",
+      left: "6px",
       bottom: "0",
-      width: "260px",
-      height: "360px",
+      width: `${viewWidth}px`,
+      height: `${viewHeight}px`,
       zIndex: "1000",
       pointerEvents: "none"
     });
@@ -530,15 +533,31 @@
       const model = await PIXI.live2d.Live2DModel.from(modelJsonPath, {
         autoInteract: false
       });
-      model.anchor.set(0, 1);
-      model.position.set(0, app.renderer.height);
 
-      const baseWidth = model.width || 1000;
-      const baseHeight = model.height || 1000;
-      const scaleX = app.renderer.width / baseWidth;
-      const scaleY = app.renderer.height / baseHeight;
-      const fitScale = Math.min(scaleX, scaleY) * 0.95;
-      model.scale.set(Math.max(0.08, Math.min(fitScale, 1.2)));
+      model.scale.set(1);
+      const bounds = model.getLocalBounds();
+      const scaleX = (app.renderer.width * 0.9) / Math.max(bounds.width, 1);
+      const scaleY = (app.renderer.height * 0.96) / Math.max(bounds.height, 1);
+      const fitScale = Math.min(scaleX, scaleY);
+      model.scale.set(Math.max(0.08, Math.min(fitScale, 1.35)));
+
+      model.position.set(
+        app.renderer.width * 0.5 - (bounds.x + bounds.width * 0.5) * model.scale.x,
+        app.renderer.height - (bounds.y + bounds.height) * model.scale.y
+      );
+
+      const updateFocus = (x, y) => {
+        if (typeof model.focus !== "function") return;
+        const normalizedX = (x / window.innerWidth) * 2 - 1;
+        const normalizedY = (y / window.innerHeight) * 2 - 1;
+        model.focus(normalizedX, -normalizedY);
+      };
+
+      window.addEventListener("mousemove", (event) => {
+        updateFocus(event.clientX, event.clientY);
+      }, { passive: true });
+
+      updateFocus(window.innerWidth / 2, window.innerHeight / 2);
 
       app.stage.addChild(model);
     } catch (error) {
