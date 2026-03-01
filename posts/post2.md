@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>在steam上发布了自己的第一个游戏 - 小涵Naiwenel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css" >
+  <link rel="stylesheet" href="./post_style.css" >
+  <style>
+
+  </style>
+</head>
+
+<body class="light">
+
+  <canvas id="star-canvas"></canvas>
+
+  <!-- 导航栏 -->
+  <nav class="menu-nav">
+    <div class="menu-container">
+
+      <!-- Logo -->
+      <div class="menu-logo"><a href="index.html">小涵Naiwenel</a></div>
+
+      <!-- 功能区域：导航栏和主题切换 -->
+      <div class="menu-function">
+        <!-- 汉堡按钮（移动端可见） -->
+        <div class="hamburger" id="hamburger">
+          ☰
+        </div>
+  
+        <!-- 导航菜单 -->
+        <ul class="menu-list" id="menuList">
+          <li><a href="/index.html" class="menu-item">首页</a></li>
+          <li><a href="/blog.html" class="menu-item active">博客列表</a></li>
+          <li><a href="/about.html" class="menu-item">关于我</a></li>
+          <li><a href="/friendlinks.html" class="menu-item">友情链接</a></li>
+        </ul>
+  
+        <!-- 夜间模式切换 -->
+        <div class="night-toggle" id="nightToggle">🌙</div>
+  
+        </div>
+      </div>
+  </nav>
+
+  <div class="return-btn-warpper">
+    <div class="return-btn" onclick="location.href='../blog.html'">← 返回博客列表</div>
+  </div>
+
+  <div class="article-container">
+    <h1 class="article-title">在steam上发布了自己的第一个游戏</h1>
+    <div class="article-date">发表于：2026-3-1</div>
+    <div class="article-content">
+      这篇文章应该也算是正儿八经的第一篇文章了吧？
+      总之，如标题所示，前段时间第一个游戏Demo发布了，可以通过<a herf="https://store.steampowered.com/app/4170570/Level_C1366/">这个链接</a>直接跳转到游戏的steam页面哦。
+      好像已经很久没更新新的post了呢，之后稍微更新的频繁一点吧
+    </div>
+  </div>
+
+  <!-- ===== 评论区（玻璃拟态风） ===== -->
+  <div class="comment-container">
+    <h2 class="comment-title">💬 评论区</h2>
+
+    <!-- 输入框 -->
+    <div class="comment-input-card glass-box">
+      <input id="nickname" class="glass-input" placeholder="昵称（必填）">
+      <textarea id="comment" class="glass-textarea" placeholder="写下你的评论..."></textarea>
+      <button id="sendComment" class="glass-button">提交评论</button>
+    </div>
+
+    <!-- 评论列表 -->
+    <div id="commentList" class="comment-list glass-box">
+      正在加载评论...
+    </div>
+  </div>
+
+  <div id="backToTop">↑</div>
+
+
+  <!-- 动效脚本：星空 + 鼠标吸引 + 爆炸粒子 + 扩散圈 -->
+  <script>
+    const canvas = document.getElementById("star-canvas");
+    const ctx = canvas.getContext("2d");
+
+    let stars = [], bursts = [], rings = [];
+    let w, h;
+    let mouse = { x: null, y: null };
+
+    const toggleBtn = document.getElementById("nightToggle");
+    toggleBtn.onclick = () => {
+      if (document.body.classList.contains("light")) {
+        document.body.classList.replace("light", "night");
+        toggleBtn.textContent = "☀️";
+      } else {
+        document.body.classList.replace("night", "light");
+        toggleBtn.textContent = "🌙";
+      }
+    };
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.onresize = resize;
+    resize();
+
+    function initStars() {
+      stars = [];
+      for (let i = 0; i < 130; i++) {
+        stars.push({
+          x: Math.random()*w,
+          y: Math.random()*h,
+          r: Math.random()*1.3+0.4,
+          dx: (Math.random()-0.5)*0.15,
+          dy: (Math.random()-0.5)*0.15,
+          color: Math.random()>0.5 ? "#2ec7c9" : "#2970ea"
+        });
+      }
+    }
+
+    window.addEventListener("mousemove", e=>{
+      mouse.x=e.clientX; mouse.y=e.clientY;
+    });
+    window.addEventListener("mouseleave", ()=> mouse.x=null);
+
+    window.addEventListener("mousedown", createBurst);
+    window.addEventListener("touchstart", e=>{
+      const t=e.touches[0];
+      createBurst({clientX:t.clientX, clientY:t.clientY});
+    });
+
+    function createBurst(e){
+      const x=e.clientX, y=e.clientY;
+      for(let i=0;i<14;i++){
+        bursts.push({
+          x, y,
+          r:Math.random()*3+2,
+          dx:(Math.random()-0.5)*4,
+          dy:(Math.random()-0.5)*4,
+          life:1,
+          color:Math.random()>0.5 ? "#2ec7c9" : "#2970ea",
+          trail:[]
+        });
+      }
+      rings.push({x,y,r:0,alpha:0.85});
+    }
+
+    function drawBursts(){
+      for(let i=bursts.length-1;i>=0;i--){
+        let b=bursts[i];
+
+        b.trail.push({x:b.x,y:b.y,alpha:b.life});
+        if(b.trail.length>10) b.trail.shift();
+
+        for(let t of b.trail){
+          ctx.beginPath();
+          ctx.arc(t.x,t.y,1.2,0,Math.PI*2);
+          ctx.fillStyle=b.color+Math.floor(t.alpha*255).toString(16).padStart(2,"0");
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+        ctx.fillStyle=b.color+Math.floor(b.life*255).toString(16).padStart(2,"0");
+        ctx.fill();
+
+        b.x+=b.dx;
+        b.y+=b.dy;
+        b.dy+=0.03;
+        b.life-=0.02;
+        b.r*=0.97;
+
+        if(b.life<=0 || b.r<0.3) bursts.splice(i,1);
+      }
+    }
+
+    function drawRings(){
+      for(let i=rings.length-1;i>=0;i--){
+        let r=rings[i];
+        ctx.beginPath();
+        ctx.arc(r.x,r.y,r.r,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(0,200,255,${r.alpha})`;
+        ctx.lineWidth=3;
+        ctx.stroke();
+
+        r.r+=2.3;
+        r.alpha-=0.02;
+        if(r.alpha<=0) rings.splice(i,1);
+      }
+    }
+
+    function draw(){
+      ctx.clearRect(0,0,w,h);
+
+      for(let s of stars){
+        ctx.beginPath();
+        ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle=s.color+"AA";
+        ctx.fill();
+
+        s.x+=s.dx;
+        s.y+=s.dy;
+
+        if(mouse.x!==null){
+          const dx=mouse.x-s.x, dy=mouse.y-s.y;
+          const dist=Math.sqrt(dx*dx+dy*dy);
+          if(dist<150){
+            s.x+=dx*0.015;
+            s.y+=dy*0.015;
+          }
+        }
+
+        if(s.x<0||s.x>w||s.y<0||s.y>h){
+          s.x=Math.random()*w;
+          s.y=Math.random()*h;
+        }
+      }
+
+      drawBursts();
+      drawRings();
+      requestAnimationFrame(draw);
+    }
+
+    /* ===== 返回顶部按钮 ===== */
+    const backToTop = document.getElementById("backToTop");
+
+    // 监听滚动显示按钮
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 200) {
+        backToTop.classList.add("show");
+      } else {
+        backToTop.classList.remove("show");
+      }
+    });
+
+    // 点击平滑回顶部
+    backToTop.onclick = () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    };
+
+    
+    
+    // 获取当前文章 ID：例如 /posts/post0.html → post0
+    const postId = location.pathname.split("/").pop().replace(".html", "");
+
+    // 最小提交间隔（毫秒）
+    const MIN_INTERVAL = 3000;
+    let lastSubmitTime = 0;
+
+        // 定义加载评论的函数
+    function loadComments() {
+      // API 发送 GET 请求，获取当前文章的所有评论，本部分不作修改
+      fetch(`/api/comments?post=${postId}`)
+        .then(res => res.json())
+        .then(data => {
+          const commentList = document.getElementById("commentList");
+
+          // 如果没有评论，用 textContent 直接显示文本
+          if (!data.length) {
+            commentList.textContent = "暂无评论";
+            return;
+          }
+
+          // 如果有评论，先清空 div 的所有内容，然后逐条构建 DOM 元素
+          commentList.innerHTML = ""; // 清空之前的内容，保证 div 内部是空的
+
+          data.forEach(c => {
+            // 创建外层div.comment-item
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "comment-item";
+
+            // 创建div.comment-nick
+            const nickDiv = document.createElement("div");
+            nickDiv.className = "comment-nick";
+            nickDiv.textContent = c.nickname; // 使用 textContent 安全设置昵称
+
+            // 创建div.comment-content
+            const contentDiv = document.createElement("div");
+            contentDiv.className = "comment-content";
+            contentDiv.textContent = c.content; // 使用 textContent 安全设置评论内容
+
+            // 创建div.comment-time
+            const timeDiv = document.createElement("div");
+            timeDiv.className = "comment-time";
+            // 时间由服务器生成，虽然不需要转义（不包含用户输入），但用 textContent 也没问题
+            timeDiv.textContent = c.created_at.replace('T', ' ').slice(0, 16);
+
+            // 将三个 div 添加到 itemDiv 中
+            itemDiv.appendChild(nickDiv);
+            itemDiv.appendChild(contentDiv);
+            itemDiv.appendChild(timeDiv);
+
+            // 将 itemDiv 添加到评论列表容器
+            commentList.appendChild(itemDiv);
+          });
+        });
+    }
+
+    document.getElementById("sendComment").onclick = () => {
+      const now = Date.now();
+
+      // ① 防止快速连点（客户端）
+      if (now - lastSubmitTime < MIN_INTERVAL) {
+        alert("提交太快，请稍后再试！");
+        return;
+      }
+
+      const nickname = document.getElementById("nickname").value.trim();
+      const content = document.getElementById("comment").value.trim();
+
+      // ② 空值校验
+      if (!nickname || !content) {
+        alert("昵称和内容不能为空！");
+        return;
+      }
+
+      // ③ 长度校验（前端）
+      if (nickname.length > 20) {
+        alert("昵称长度不能超过 20 字！");
+        return;
+      }
+      if (content.length > 500) {
+        alert("评论内容不能超过 500 字！");
+        return;
+      }
+
+      // ④ 禁用按钮防止连点
+      const btn = document.getElementById("sendComment");
+      btn.disabled = true;
+      btn.innerText = "提交中…";
+
+      fetch(`/api/comments?post=${postId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          nickname,
+          content
+        })
+      })
+      
+      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          alert(res.msg || "提交失败，请稍后再试");
+          return;
+        }
+
+        // 重置输入框
+        document.getElementById("comment").value = "";
+        lastSubmitTime = Date.now();
+        loadComments();
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerText = "提交评论";
+      });
+    };
+
+    <!-- 汉堡按钮显示 -->
+    const hamburger = document.getElementById("hamburger");
+    const menuList = document.getElementById("menuList");
+
+    hamburger.addEventListener("click", () => {
+      menuList.classList.toggle("show");
+    });
+
+    // 初次加载评论
+    loadComments();
+
+    initStars();
+    draw();
+  </script>
+
+</body>
+</html>
