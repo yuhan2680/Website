@@ -1,0 +1,29 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "小涵 .moc3",
+		"Textures": [
+			"小涵 .8192/texture_00.png",
+			"小涵 .8192/texture_01.png",
+			"小涵 .8192/texture_02.png",
+			"小涵 .8192/texture_03.png"
+		],
+		"Physics": "小涵 .physics3.json",
+		"DisplayInfo": "小涵 .cdi3.json"
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeROpen",
+				"ParamEyeLOpen"
+			]
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		}
+	]
+}

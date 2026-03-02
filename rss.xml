@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <!-- 整个站点的信息 -->
+    <title>小涵Naiwenel 的博客</title>
+    <link>https://naiwenel.com/</link>
+    <description>个人博客 · 小说与开发记录</description>
+    <language>zh-CN</language>
+
+    <!-- 这个时间可以随便改成你最近更新的日期 -->
+    <lastBuildDate>Wed, 26 Nov 2025 12:00:00 +0800</lastBuildDate>
+    <generator>Handcrafted RSS for Naiwenel</generator>
+
+    <!-- ========== 第一篇正式文章：post1.html ========== -->
+    <item>
+      <title>第一篇文章</title>
+      <link>https://naiwenel.com/posts/post1.html</link>
+      <guid>https://naiwenel.com/posts/post1.html</guid>
+
+      <!-- 时间 -->
+      <pubDate>Mon, 24 Nov 2025 12:00:00 +0800</pubDate>
+
+      <description><![CDATA[
+        总之...这个就是第一篇文章了
+      ]]></description>
+    </item>
+
+    <!-- ========== 测试文章：post0.html（如果不想公开可以删掉这个 item） ========== -->
+    <item>
+      <title>test</title>
+      <link>https://naiwenel.com/posts/post0.html</link>
+      <guid>https://naiwenel.com/posts/post0.html</guid>
+
+      <pubDate>Sun, 23 Nov 2025 12:00:00 +0800</pubDate>
+
+      <description><![CDATA[
+        这是一个测试用文章（如不需要，可删除该条目）。
+      ]]></description>
+    </item>
+
+  </channel>
+</rss>

@@ -1,0 +1,10 @@
+cd C:\Users\Legion\Desktop\Website
+
+git init
+git remote add origin https://github.com/yuhan2680/Website.git
+git branch -M main
+
+git add .
+git commit -m "Update Website"
+
+git push -u origin main --force

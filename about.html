@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>关于我 | 小涵の个人网站</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <link rel="icon" href="avatar_logo.jpg" type="image/jpeg">
+  <!-- 二次元圆润字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    :root{
+      /* 亮色模式 */
+      --title-color: #2970ea;
+      --text-sub: #577;
+
+      /* 夜间模式 */
+      --night-title: #7aa8ff;
+      --night-text-sub: #9bb0d8;
+    }
+    
+    .about-text {
+      line-height: 1.8em;
+      color: var(--text-sub);
+      font-size: 1.05em;
+    }
+    body.night .about-text {
+      color: var(--night-text-sub);
+    }
+
+  </style>
+
+</head>
+
+<body class="light">
+
+  <!-- 星空背景 -->
+  <canvas id="star-canvas"></canvas>
+
+  <!-- 导航栏 -->
+  <nav class="menu-nav">
+    <div class="menu-container">
+
+      <!-- Logo -->
+      <div class="menu-logo">
+      <a href="index.html" class="logo-link">
+        <img src="avatar_logo.jpg" alt="小涵 Naiwenel Logo" class="site-logo">
+        <span class="logo-text">小涵Naiwenel</span>
+      </a>
+    </div>
+
+      <!-- 功能区域：导航栏和主题切换 -->
+      <div class="menu-function">
+        <!-- 汉堡按钮（移动端可见） -->
+        <div class="hamburger" id="hamburger">
+          ☰
+        </div>
+  
+        <!-- 导航菜单 -->
+        <ul class="menu-list" id="menuList">
+          <li><a href="index.html" class="menu-item">首页</a></li>
+          <li><a href="blog.html" class="menu-item">博客列表</a></li>
+          <li><a href="about.html" class="menu-item active">关于我</a></li>
+          <li><a href="friendlinks.html" class="menu-item">友情链接</a></li>
+        </ul>
+  
+        <!-- 夜间模式切换 -->
+        <div class="night-toggle" id="nightToggle">🌙</div>
+  
+        </div>
+      </div>
+  </nav>
+
+  <!-- Banner -->
+  <div class="banner">
+    <h1>关于我 ✨</h1>
+    <p>这里是小涵的自我介绍~</p>
+  </div>
+
+  <!-- About 内容 -->
+  <div class="section">
+    <h2>👋 自我介绍</h2>
+    <div class="about-text">
+      <p>你好~我是<b>小涵 Naiwenel</b>，一名个人势Vup&Vtuber，开源独立游戏开发者</p>
+      <p>兴趣爱好&技能：</p>
+      <ul>
+        <li>🎮 独立游戏策划</li>
+        <li>🌌 视觉小说制作</li>
+        <li>💫 用Vibe coding搭网站（划）</li>
+        <li>🎙 Vtuber直播</li>
+      </ul>
+
+      <p>希望我的作品能为大家带来快乐~ ✨</p>
+    </div>
+  </div>
+
+  <script>
+    /* ===============================
+       星空粒子 / 鼠标吸引 / 爆炸粒子
+       =============================== */
+    const canvas = document.getElementById("star-canvas");
+    const ctx = canvas.getContext("2d");
+
+    let stars = [], bursts = [], rings = [];
+    let w, h;
+    let mouse = { x: null, y: null };
+
+    /* 夜间模式 */
+    const toggleBtn = document.getElementById("nightToggle");
+    toggleBtn.onclick = () => {
+      if (document.body.classList.contains("light")) {
+        document.body.classList.replace("light", "night");
+        toggleBtn.textContent = "☀️";
+      } else {
+        document.body.classList.replace("night", "light");
+        toggleBtn.textContent = "🌙";
+      }
+    };
+
+    /* 画布自适应 */
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.onresize = resize;
+    resize();
+
+    /* 初始化星星 */
+    function initStars() {
+      stars = [];
+      for (let i = 0; i < 130; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.3 + 0.4,
+          dx: (Math.random() - 0.5) * 0.15,
+          dy: (Math.random() - 0.5) * 0.15,
+          color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea"
+        });
+      }
+    }
+
+    /* 鼠标吸引 */
+    window.addEventListener("mousemove", e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener("mouseleave", () => {
+      mouse.x = null;
+    });
+
+    /* 点击 → 星爆 + 音游波纹 */
+    window.addEventListener("mousedown", createBurst);
+    window.addEventListener("touchstart", e => {
+      const t = e.touches[0];
+      createBurst({ clientX: t.clientX, clientY: t.clientY });
+    });
+
+    function createBurst(e) {
+      const x = e.clientX, y = e.clientY;
+
+      for (let i = 0; i < 14; i++) {
+        bursts.push({
+          x: x,
+          y: y,
+          r: Math.random() * 3 + 2,
+          dx: (Math.random() - 0.5) * 4,
+          dy: (Math.random() - 0.5) * 4,
+          life: 1,
+          color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea",
+          trail: []
+        });
+      }
+
+      rings.push({ x: x, y: y, r: 0, alpha: 0.85 });
+    }
+
+    /* 粒子 + 尾迹 */
+    function drawBursts() {
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        let b = bursts[i];
+
+        b.trail.push({ x: b.x, y: b.y, alpha: b.life });
+        if (b.trail.length > 10) b.trail.shift();
+
+        for (let t of b.trail) {
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = b.color + Math.floor(t.alpha * 255).toString(16).padStart(2, "0");
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = b.color + Math.floor(b.life * 255).toString(16).padStart(2, "0");
+        ctx.fill();
+
+        b.x += b.dx;
+        b.y += b.dy;
+        b.dy += 0.03;
+        b.life -= 0.02;
+        b.r *= 0.97;
+
+        if (b.life <= 0 || b.r < 0.3) bursts.splice(i, 1);
+      }
+    }
+
+    /* 音游扩散光圈 */
+    function drawRings() {
+      for (let i = rings.length - 1; i >= 0; i--) {
+        let r = rings[i];
+
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(0,200,255," + r.alpha + ")";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        r.r += 2.3;
+        r.alpha -= 0.02;
+
+        if (r.alpha <= 0) rings.splice(i, 1);
+      }
+    }
+
+    /* 主绘制循环 */
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+
+      for (let s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = s.color + "AA";
+        ctx.fill();
+
+        s.x += s.dx;
+        s.y += s.dy;
+
+        if (mouse.x !== null) {
+          const dx = mouse.x - s.x;
+          const dy = mouse.y - s.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            s.x += dx * 0.015;
+            s.y += dy * 0.015;
+          }
+        }
+
+        if (s.x < 0 || s.x > w || s.y < 0 || s.y > h) {
+          s.x = Math.random() * w;
+          s.y = Math.random() * h;
+        }
+      }
+
+      drawBursts();
+      drawRings();
+
+      requestAnimationFrame(draw);
+    }
+
+    <!-- 汉堡按钮显示 -->
+    const hamburger = document.getElementById("hamburger");
+    const menuList = document.getElementById("menuList");
+
+    hamburger.addEventListener("click", () => {
+      menuList.classList.toggle("show");
+    });
+
+    initStars();
+    draw();
+  </script>
+</body>
+</html>

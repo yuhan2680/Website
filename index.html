@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>小涵Naiwenelの个人网站</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <link rel="icon" href="avatar_logo.jpg" type="image/jpeg">
+  <!-- 圆润字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+</head>
+
+<body class="light">
+
+  <!-- 星空背景 -->
+  <canvas id="star-canvas"></canvas>
+
+  <!-- 导航栏 -->
+  <nav class="menu-nav">
+    <div class="menu-container">
+
+      <!-- Logo -->
+      <div class="menu-logo">
+      <a href="index.html" class="logo-link">
+        <img src="avatar_logo.jpg" alt="小涵 Naiwenel Logo" class="site-logo">
+        <span class="logo-text">小涵Naiwenel</span>
+      </a>
+    </div>
+
+      <!-- 功能区域：导航栏和主题切换 -->
+      <div class="menu-function">
+        <!-- 汉堡按钮（移动端可见） -->
+        <div class="hamburger" id="hamburger">
+          ☰
+        </div>
+  
+        <!-- 导航菜单 -->
+        <ul class="menu-list" id="menuList">
+          <li><a href="index.html" class="menu-item active">首页</a></li>
+          <li><a href="blog.html" class="menu-item">博客列表</a></li>
+          <li><a href="about.html" class="menu-item">关于我</a></li>
+          <li><a href="friendlinks.html" class="menu-item">友情链接</a></li>
+        </ul>
+  
+        <!-- 夜间模式切换 -->
+        <div class="night-toggle" id="nightToggle">🌙</div>
+  
+        </div>
+      </div>
+  </nav>
+
+
+  <!-- Banner -->
+  <div class="banner">
+    <h1>欢迎来到小涵の个人网站 ✨</h1>
+    <p>以一灯燃百千灯，直至万灯皆明</p>
+  </div>
+  
+  <!-- 内容卡片 -->
+  <div class="section">
+    <h2><a class="post-title" href="donate.html">赞助作者</a></h2>
+  </div>
+
+  <!-- 内容卡片 -->
+  <div class="section">
+    <h2>📝 最新文章</h2>
+    <ul class="post-list">
+      <li>
+        <a class="post-title" href="posts/post2.html">在steam上发布了自己的第一个游戏</a>
+        <span class="post-date">2026-3-1</span>
+      </li>
+    </ul>
+  </div>
+
+    <!-- ===== 留言板 ===== -->
+  <div class="comment-container">
+    <h2 class="comment-title">💬 留言板</h2>
+
+    <!-- 输入框 -->
+    <div class="comment-input-card glass-box">
+      <input id="nickname" class="glass-input" placeholder="昵称（必填）">
+      <textarea id="comment" class="glass-textarea" placeholder="写下你的评论..."></textarea>
+      <button id="sendComment" class="glass-button">提交评论</button>
+    </div>
+
+    <!-- 评论列表 -->
+    <div id="commentList" class="comment-list glass-box">
+      正在加载评论...
+    </div>
+  </div>
+
+  <div id="backToTop">↑</div>
+
+  <!-- 星爆+波纹+尾迹 -->
+  <script>
+    const canvas = document.getElementById("star-canvas");
+    const ctx = canvas.getContext("2d");
+
+    let stars = [], bursts = [], rings = [];
+    let w, h;
+    let mouse = { x: null, y: null };
+
+    /* 夜间模式按钮 */
+    const toggleBtn = document.getElementById("nightToggle");
+    toggleBtn.onclick = () => {
+      if (document.body.classList.contains("light")) {
+        document.body.classList.replace("light", "night");
+        toggleBtn.textContent = "☀️";
+      } else {
+        document.body.classList.replace("night", "light");
+        toggleBtn.textContent = "🌙";
+      }
+    };
+
+    /* 画布缩放 */
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.onresize = resize;
+    resize();
+
+    /* 初始化星空粒子 */
+    function initStars() {
+      stars = [];
+      for (let i = 0; i < 130; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.3 + 0.4,
+          dx: (Math.random() - 0.5) * 0.15,
+          dy: (Math.random() - 0.5) * 0.15,
+          color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea"
+        });
+      }
+    }
+
+    /* 鼠标吸引 */
+    window.addEventListener("mousemove", e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener("mouseleave", () => {
+      mouse.x = null;
+    });
+
+    /* 点击事件：星爆 & 扩散波纹 */
+    window.addEventListener("mousedown", createBurst);
+    window.addEventListener("touchstart", e => {
+      const t = e.touches[0];
+      createBurst({ clientX: t.clientX, clientY: t.clientY });
+    });
+
+    function createBurst(e) {
+      const x = e.clientX, y = e.clientY;
+
+      for (let i = 0; i < 14; i++) {
+        bursts.push({
+          x: x,
+          y: y,
+          r: Math.random() * 3 + 2,
+          dx: (Math.random() - 0.5) * 4,
+          dy: (Math.random() - 0.5) * 4,
+          life: 1,
+          color: Math.random() > 0.5 ? "#2ec7c9" : "#2970ea",
+          trail: []
+        });
+      }
+
+      rings.push({ x: x, y: y, r: 0, alpha: 0.85 });
+    }
+
+    /* 爆炸粒子（含尾迹） */
+    function drawBursts() {
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        let b = bursts[i];
+
+        /* 尾迹点 */
+        b.trail.push({ x: b.x, y: b.y, alpha: b.life });
+        if (b.trail.length > 10) b.trail.shift();
+
+        for (let t of b.trail) {
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = b.color + Math.floor(t.alpha * 255).toString(16).padStart(2, "0");
+          ctx.fill();
+        }
+
+        /* 主粒子 */
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = b.color + Math.floor(b.life * 255).toString(16).padStart(2, "0");
+        ctx.fill();
+
+        b.x += b.dx;
+        b.y += b.dy;
+        b.dy += 0.03;
+        b.life -= 0.02;
+        b.r *= 0.97;
+
+        if (b.life <= 0 || b.r < 0.3) bursts.splice(i, 1);
+      }
+    }
+
+    /* 音游扩散光圈 */
+    function drawRings() {
+      for (let i = rings.length - 1; i >= 0; i--) {
+        let r = rings[i];
+
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(0,200,255," + r.alpha + ")";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        r.r += 2.3;
+        r.alpha -= 0.02;
+
+        if (r.alpha <= 0) rings.splice(i, 1);
+      }
+    }
+
+    /* 主绘制循环 */
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+
+      /* 星空粒子 */
+      for (let s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = s.color + "AA";
+        ctx.fill();
+
+        s.x += s.dx;
+        s.y += s.dy;
+
+        /* 鼠标吸引 */
+        if (mouse.x !== null) {
+          const dx = mouse.x - s.x;
+          const dy = mouse.y - s.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            s.x += dx * 0.015;
+            s.y += dy * 0.015;
+          }
+        }
+
+        /* 超出重置 */
+        if (s.x < 0 || s.x > w || s.y < 0 || s.y > h) {
+          s.x = Math.random() * w;
+          s.y = Math.random() * h;
+        }
+      }
+
+      drawBursts(); /* 爆炸 */
+      drawRings();  /* 波纹 */
+
+      requestAnimationFrame(draw);
+    }
+
+    
+    /* ===== 返回顶部按钮 ===== */
+    const backToTop = document.getElementById("backToTop");
+
+    // 监听滚动显示按钮
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 200) {
+        backToTop.classList.add("show");
+      } else {
+        backToTop.classList.remove("show");
+      }
+    });
+
+    // 点击平滑回顶部
+    backToTop.onclick = () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    };
+
+    // 获取当前文章 ID：例如 /posts/post0.html → post0
+    let postId = location.pathname.split("/").pop().replace(".html", "");
+    if(!postId){
+      postId = 'index';
+    }
+    // 最小提交间隔（毫秒）
+    const MIN_INTERVAL = 3000;
+    let lastSubmitTime = 0;
+
+    // 定义加载评论的函数
+    function loadComments() {
+      // API 发送 GET 请求，获取当前文章的所有评论，本部分不作修改
+      fetch(`/api/comments?post=${postId}`)
+        .then(res => res.json())
+        .then(data => {
+          const commentList = document.getElementById("commentList");
+
+          // 如果没有评论，用 textContent 直接显示文本
+          if (!data.length) {
+            commentList.textContent = "暂无评论";
+            return;
+          }
+
+          // 如果有评论，先清空 div 的所有内容，然后逐条构建 DOM 元素
+          commentList.innerHTML = ""; // 清空之前的内容，保证 div 内部是空的
+
+          data.forEach(c => {
+            // 创建外层div.comment-item
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "comment-item";
+
+            // 创建div.comment-nick
+            const nickDiv = document.createElement("div");
+            nickDiv.className = "comment-nick";
+            nickDiv.textContent = c.nickname; // 使用 textContent 安全设置昵称
+
+            // 创建div.comment-content
+            const contentDiv = document.createElement("div");
+            contentDiv.className = "comment-content";
+            contentDiv.textContent = c.content; // 使用 textContent 安全设置评论内容
+
+            // 创建div.comment-time
+            const timeDiv = document.createElement("div");
+            timeDiv.className = "comment-time";
+            // 时间由服务器生成，虽然不需要转义（不包含用户输入），但用 textContent 也没问题
+            timeDiv.textContent = c.created_at.replace('T', ' ').slice(0, 16);
+
+            // 将三个 div 添加到 itemDiv 中
+            itemDiv.appendChild(nickDiv);
+            itemDiv.appendChild(contentDiv);
+            itemDiv.appendChild(timeDiv);
+
+            // 将 itemDiv 添加到评论列表容器
+            commentList.appendChild(itemDiv);
+          });
+        });
+    }
+    
+
+    document.getElementById("sendComment").onclick = () => {
+      const now = Date.now();
+      // ① 防止快速连点（客户端）
+      if (now - lastSubmitTime < MIN_INTERVAL) {
+        alert("提交太快，请稍后再试！");
+        return;
+      }
+
+      const nickname = document.getElementById("nickname").value.trim();
+      const content = document.getElementById("comment").value.trim();
+
+      // ② 空值校验
+      if (!nickname || !content) {
+        alert("昵称和内容不能为空！");
+        return;
+      }
+
+      // ③ 长度校验（前端）
+      if (nickname.length > 20) {
+        alert("昵称长度不能超过 20 字！");
+        return;
+      }
+      if (content.length > 500) {
+        alert("评论内容不能超过 500 字！");
+        return;
+      }
+
+      // ④ 禁用按钮防止连点
+      const btn = document.getElementById("sendComment");
+      btn.disabled = true;
+      btn.innerText = "提交中…";
+
+      fetch(`/api/comments?post=${postId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          nickname,
+          content
+        })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          alert(res.msg || "提交失败，请稍后再试");
+          return;
+        }
+
+        // 重置输入框
+        document.getElementById("comment").value = "";
+        lastSubmitTime = Date.now();
+        loadComments();
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerText = "提交评论";
+      });
+    };
+
+    // 汉堡按钮显示
+    const hamburger = document.getElementById("hamburger");
+    const menuList = document.getElementById("menuList");
+
+    hamburger.addEventListener("click", () => {
+      menuList.classList.toggle("show");
+    });
+
+
+
+    // 初次加载评论
+    loadComments();
+
+    initStars();
+    draw();
+  </script>
+  
+<!-- Live2D（Cubism 3/4 模型） -->
+<script>
+  const loadScript = (src) => new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve(src);
+    script.onerror = () => reject(new Error(`脚本加载失败: ${src}`));
+    document.head.appendChild(script);
+  });
+
+  const loadScriptWithFallback = async (sources, name) => {
+    let lastError = null;
+
+    for (const src of sources) {
+      try {
+        await loadScript(src);
+        console.info(`[Live2D] ${name} 加载成功: ${src}`);
+        return src;
+      } catch (error) {
+        lastError = error;
+        console.warn(`[Live2D] ${name} 加载失败，尝试下一个镜像: ${src}`);
+      }
+    }
+
+    throw new Error(`${name} 加载失败（所有镜像均不可用）: ${lastError?.message || "未知错误"}`);
+  };
+
+  // Live2D 运行库本地化：避免外链在不同网络环境下失败
+  const runtimeSources = {
+    pixi: ["/live2d/libs/pixi.min.js"],
+    cubismCore: ["/live2d/libs/live2dcubismcore.min.js"],
+    live2dDisplay: ["/live2d/libs/cubism4.min.js"]
+  };
+
+  const showLive2DStatus = (message) => {
+    const old = document.getElementById("live2d-status");
+    if (old) old.remove();
+
+    const badge = document.createElement("div");
+    badge.id = "live2d-status";
+    badge.textContent = message;
+    Object.assign(badge.style, {
+      position: "fixed",
+      left: "12px",
+      bottom: "12px",
+      zIndex: "1200",
+      fontSize: "12px",
+      lineHeight: "1.4",
+      padding: "6px 8px",
+      borderRadius: "8px",
+      color: "#fff",
+      background: "rgba(220, 53, 69, 0.88)",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+      pointerEvents: "none"
+    });
+
+    document.body.appendChild(badge);
+  };
+
+  window.addEventListener("load", async () => {
+    const modelJsonPath = encodeURI("/live2d/小涵_vts/小涵 .model3.json");
+    const isMobile = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
+
+    // 手机端默认不渲染，避免遮挡正文内容
+    if (isMobile) return;
+
+    try {
+      await loadScriptWithFallback(runtimeSources.pixi, "PIXI");
+      await loadScriptWithFallback(runtimeSources.cubismCore, "Live2D Cubism Core");
+      await loadScriptWithFallback(runtimeSources.live2dDisplay, "pixi-live2d-display");
+    } catch (error) {
+      console.error("Live2D 运行库加载失败：", error);
+      showLive2DStatus("Live2D 加载失败（运行库不可用）");
+      return;
+    }
+
+    if (!window.PIXI || !PIXI.live2d || !window.Live2DCubismCore) {
+      console.error("Live2D 运行库不完整：请检查 CDN 是否可访问。");
+      showLive2DStatus("Live2D 加载失败（运行库不完整）");
+      return;
+    }
+
+    const viewWidth = Math.max(280, Math.min(380, Math.floor(window.innerWidth * 0.3)));
+    const viewHeight = Math.max(420, Math.min(640, Math.floor(window.innerHeight * 0.72)));
+
+    let app;
+    try {
+      app = new PIXI.Application({
+        width: viewWidth,
+        height: viewHeight,
+        transparent: true,
+        antialias: true,
+        autoDensity: true,
+        resolution: window.devicePixelRatio || 1
+      });
+    } catch (error) {
+      console.error("Live2D 渲染器初始化失败：", error);
+      showLive2DStatus("Live2D 加载失败（浏览器不支持 WebGL）");
+      return;
+    }
+
+    if (app.renderer?.type !== PIXI.RENDERER_TYPE.WEBGL) {
+      console.error("Live2D 需要 WebGL 渲染器，当前不可用。");
+      showLive2DStatus("Live2D 加载失败（WebGL 不可用）");
+      return;
+    }
+
+    Object.assign(app.view.style, {
+      position: "fixed",
+      left: "6px",
+      bottom: "0",
+      width: `${viewWidth}px`,
+      height: `${viewHeight}px`,
+      zIndex: "1000",
+      pointerEvents: "none"
+    });
+    document.body.appendChild(app.view);
+
+    try {
+      const model = await PIXI.live2d.Live2DModel.from(modelJsonPath, {
+        autoInteract: false
+      });
+
+      model.scale.set(1);
+      const bounds = model.getLocalBounds();
+      const scaleX = (app.renderer.width * 0.9) / Math.max(bounds.width, 1);
+      const scaleY = (app.renderer.height * 0.96) / Math.max(bounds.height, 1);
+      const fitScale = Math.min(scaleX, scaleY);
+      model.scale.set(Math.max(0.08, Math.min(fitScale, 1.35)));
+
+      model.position.set(
+        app.renderer.width * 0.5 - (bounds.x + bounds.width * 0.5) * model.scale.x,
+        app.renderer.height - (bounds.y + bounds.height) * model.scale.y
+      );
+
+      const updateFocus = (clientX, clientY) => {
+        if (typeof model.focus !== "function") return;
+        model.focus(clientX, clientY);
+      };
+
+      window.addEventListener("mousemove", (event) => {
+        updateFocus(event.clientX, event.clientY);
+      }, { passive: true });
+
+      updateFocus(window.innerWidth / 2, window.innerHeight / 2);
+
+      const skinStorageKey = "live2d-skin";
+      const getSkinValue = (skinName) => skinName === "green" ? 1 : 0;
+      let currentSkin = localStorage.getItem(skinStorageKey) || "green";
+
+      const skinButton = document.createElement("button");
+      skinButton.id = "live2d-skin-toggle";
+      skinButton.type = "button";
+      skinButton.ariaLabel = "切换 Live2D 皮肤";
+      Object.assign(skinButton.style, {
+        position: "fixed",
+        left: "14px",
+        bottom: "14px",
+        zIndex: "1100",
+        width: "34px",
+        height: "34px",
+        border: "2px solid rgba(255, 255, 255, 0.9)",
+        borderRadius: "50%",
+        cursor: "pointer",
+        boxShadow: "0 3px 10px rgba(0,0,0,0.25)"
+      });
+
+      const updateSkinButton = (skinName) => {
+        skinButton.style.background = skinName === "green"
+          ? "linear-gradient(135deg, #4fd66f, #24a148)"
+          : "linear-gradient(135deg, #52b7ff, #2563eb)";
+        skinButton.title = `当前皮肤：${skinName === "green" ? "绿色" : "蓝色"}（点击切换）`;
+      };
+
+      const applySkin = (skinName) => {
+        const coreModel = model.internalModel?.coreModel;
+        if (!coreModel || typeof coreModel.setParameterValueById !== "function") {
+          return;
+        }
+
+        const skinValue = getSkinValue(skinName);
+        coreModel.setParameterValueById("Param2", skinValue);
+        coreModel.setParameterValueById("Param4", skinValue);
+      };
+
+      const switchSkin = (skinName) => {
+        currentSkin = skinName;
+        localStorage.setItem(skinStorageKey, skinName);
+        applySkin(skinName);
+        updateSkinButton(skinName);
+      };
+
+      skinButton.addEventListener("click", () => {
+        switchSkin(currentSkin === "green" ? "blue" : "green");
+      });
+      document.body.appendChild(skinButton);
+
+      app.ticker.add(() => {
+        applySkin(currentSkin);
+      });
+
+      switchSkin(currentSkin);
+      app.stage.addChild(model);
+    } catch (error) {
+      console.error("Live2D 模型加载失败：", error);
+      showLive2DStatus("Live2D 加载失败（模型资源异常）");
+    }
+  });
+</script>
+
+
+
+</body>
+</html>
