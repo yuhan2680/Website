@@ -89,7 +89,7 @@
       gl.enableVertexAttribArray(location); gl.vertexAttribPointer(location,3,gl.FLOAT,false,24,offset);
     }
     uniforms=Object.fromEntries(["view","center","pointer","radius","time","fade","dpr"].map(name=>[name,gl.getUniformLocation(program,"u_"+name)]));
-    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE); gl.clearColor(0,0,0,0);
+    gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE,gl.ONE,gl.ONE_MINUS_SRC_ALPHA); gl.clearColor(0,0,0,0);
   }
   function resize() {
     if(lost) return;
@@ -103,7 +103,7 @@
       for(let i=0;i<particles;i++) {
         const y=rand()*2-1, angle=rand()*Math.PI*2, r=Math.sqrt(1-y*y);
         const dust=i%9===0, radius=dust?1+Math.pow(rand(),3)*.16:1+(rand()-.5)*.016;
-        data.push(Math.cos(angle)*r*radius,y*radius,Math.sin(angle)*r*radius,.65+Math.pow(rand(),2)*1.7,dust?.20:.35+rand()*.6,1);
+        data.push(Math.cos(angle)*r*radius,y*radius,Math.sin(angle)*r*radius,1.05+Math.pow(rand(),2)*2.3,dust ? .20 : .5+rand()*.5,1);
       }
     }
     count=data.length/6; gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW); draw();
