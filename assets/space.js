@@ -1,80 +1,143 @@
 (() => {
   "use strict";
   const canvas = document.getElementById("space-canvas");
-  const ctx = canvas?.getContext("2d");
-  if (!ctx) return;
+  if (!canvas) return;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  const layer = document.createElement("canvas");
-  const sky = layer.getContext("2d");
   const isHome = Boolean(document.querySelector(".hero"));
-  let width = 0, height = 0, frame = 0, last = 0, elapsed = 0, stars = [], sphere = [];
+  const gl = canvas.getContext("webgl", { alpha: true, antialias: false, depth: false, powerPreference: "low-power" });
+  let width = 0, height = 0, dpr = 1, frame = 0, last = 0, elapsed = 0, lost = false;
   let pointerX = 0, pointerY = 0, offsetX = 0, offsetY = 0, scroll = scrollY;
-  // A deterministic distribution keeps the sky from jumping when the viewport rotates.
+  let program, buffer, uniforms, starCount = 0, count = 0;
+
   function random(seed) {
     return () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   }
-  function resize() {
-    width = innerWidth; height = innerHeight;
-    const dpr = Math.min(devicePixelRatio || 1, 1.5);
-    canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    layer.width = canvas.width; layer.height = canvas.height;
-    sky.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const rand = random(2680);
-    const count = Math.min(1300, Math.floor(width * height / 1000));
-    for (let i = 0; i < count; i++) {
-      const x = rand() * width, y = rand() * height, radius = .2 + rand() * .65;
-      sky.fillStyle = i % 5 === 0 ? "#9bbacd" : "#dce2e9";
-      sky.globalAlpha = .12 + rand() * .35;
-      sky.beginPath(); sky.arc(x, y, radius, 0, Math.PI * 2); sky.fill();
-    }
-    stars = Array.from({length:width < 700 ? 22 : 45}, () => ({x:rand()*width,y:rand()*height,r:.45+rand()*.8,phase:rand()*Math.PI*2,depth:.2+rand()*.8}));
-    sphere = Array.from({length:width < 700 ? 900 : 2000}, () => {
-      const y = rand() * 2 - 1, angle = rand() * Math.PI * 2, r = Math.sqrt(1-y*y);
-      return {x:Math.cos(angle)*r,y,z:Math.sin(angle)*r,size:.4+rand()*.7};
-    });
-    draw();
+  // The content stays usable without WebGL; retain a static field of stars.
+  if (!gl) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const fallback = () => {
+      canvas.width = innerWidth; canvas.height = innerHeight;
+      const rand = random(2680);
+      for (let i=0;i<550;i++) {
+        ctx.fillStyle = `rgba(200,218,235,${.15+rand()*.4})`;
+        ctx.fillRect(rand()*canvas.width,rand()*canvas.height,.5+rand(),.5+rand());
+      }
+    };
+    fallback(); window.addEventListener("resize",fallback,{passive:true}); return;
   }
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-    ctx.drawImage(layer, 0, 0, width, height);
-    offsetX += (pointerX - offsetX) * .035; offsetY += (pointerY - offsetY) * .035;
-    for (const star of stars) {
-      const x = star.x + offsetX * star.depth, y = star.y + offsetY * star.depth;
-      ctx.globalAlpha = .28 + (1 + Math.sin(elapsed / 4000 + star.phase)) * .2;
-      ctx.fillStyle = "#e6f2ff"; ctx.beginPath(); ctx.arc(x,y,star.r,0,Math.PI*2); ctx.fill();
+  function shader(type, source) {
+    const compiled = gl.createShader(type);
+    gl.shaderSource(compiled,source); gl.compileShader(compiled);
+    if (!gl.getShaderParameter(compiled,gl.COMPILE_STATUS)) { gl.deleteShader(compiled); throw new Error("Space shader could not compile"); }
+    return compiled;
+  }
+  function init() {
+    const vertex = shader(gl.VERTEX_SHADER, `
+      attribute vec3 a_position;
+      attribute vec3 a_style;
+      uniform vec2 u_view;
+      uniform vec2 u_center;
+      uniform vec2 u_pointer;
+      uniform float u_radius;
+      uniform float u_time;
+      uniform float u_fade;
+      uniform float u_dpr;
+      varying vec4 v_color;
+      void main() {
+        if (a_style.z < 0.5) {
+          vec2 pos = a_position.xy + u_pointer / u_view * (0.5 + a_position.z) * vec2(2.0,-2.0);
+          gl_Position = vec4(pos,0.0,1.0);
+          gl_PointSize = a_style.x * u_dpr;
+          float twinkle = 0.8 + 0.2 * sin(u_time*0.4+a_position.x*30.0);
+          v_color = vec4(mix(vec3(0.60,0.73,0.86),vec3(0.96,0.94,0.88),a_position.z),a_style.y*twinkle);
+        } else {
+          float angle = u_time * 0.018;
+          float sn = sin(angle), cs = cos(angle);
+          vec3 p = vec3(a_position.x*cs+a_position.z*sn,a_position.y,a_position.z*cs-a_position.x*sn);
+          vec3 normal = normalize(p);
+          float front = smoothstep(-0.04,0.22,normal.z);
+          float light = max(0.0,dot(normal,normalize(vec3(-0.85,0.5,0.65))));
+          float rim = pow(1.0-abs(normal.z),3.0);
+          float pattern = 0.72+0.28*sin(a_position.y*19.0+sin(a_position.x*13.0)*2.0+a_position.z*9.0);
+          vec2 pixel = u_center + vec2(p.x,-p.y) * u_radius + u_pointer;
+          vec2 clip = pixel/u_view*2.0-1.0;
+          gl_Position = vec4(clip.x,-clip.y,0.0,1.0);
+          gl_PointSize = a_style.x*u_dpr;
+          vec3 color = mix(vec3(0.24,0.39,0.57),vec3(0.85,0.92,0.98),pow(light,0.7));
+          v_color = vec4(color,a_style.y*(0.10+light*0.76+rim*0.18)*front*pattern*u_fade);
+        }
+      }
+    `);
+    const fragment = shader(gl.FRAGMENT_SHADER, `
+      precision mediump float;
+      varying vec4 v_color;
+      void main() {
+        float radius = length(gl_PointCoord-vec2(0.5))*2.0;
+        float alpha = (1.0-smoothstep(0.12,1.0,radius))*v_color.a;
+        if(alpha<0.01) discard;
+        gl_FragColor = vec4(v_color.rgb,alpha);
+      }
+    `);
+    program=gl.createProgram(); gl.attachShader(program,vertex); gl.attachShader(program,fragment); gl.linkProgram(program);
+    gl.deleteShader(vertex); gl.deleteShader(fragment);
+    if(!gl.getProgramParameter(program,gl.LINK_STATUS)) throw new Error("Space shader could not link");
+    gl.useProgram(program);
+    buffer=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+    for(const [name,offset] of [["a_position",0],["a_style",12]]) {
+      const location=gl.getAttribLocation(program,name);
+      gl.enableVertexAttribArray(location); gl.vertexAttribPointer(location,3,gl.FLOAT,false,24,offset);
     }
-    const fade = isHome ? Math.max(0, 1 - scroll / 670) : 0;
-    if (fade > 0) {
-      const radius = Math.min(width * .24, 300), centerX = width * .77 + offsetX * .8, centerY = Math.min(355,height*.42) + offsetY*.8 - scroll*.14;
-      const rotation = elapsed / 120000, sin = Math.sin(rotation), cos = Math.cos(rotation);
-      for (const p of sphere) {
-        const x = p.x*cos + p.z*sin, z = p.z*cos - p.x*sin;
-        if (z < -.12) continue;
-        const light = Math.max(.03, -x*.65-p.y*.3+z*.4);
-        ctx.globalAlpha = light * fade * .7;
-        ctx.fillStyle = p.y > .48 ? "#bec3c5" : "#a6cbd9";
-        ctx.beginPath(); ctx.arc(centerX+x*radius,centerY+p.y*radius,p.size*(.75+z*.35),0,Math.PI*2); ctx.fill();
+    uniforms=Object.fromEntries(["view","center","pointer","radius","time","fade","dpr"].map(name=>[name,gl.getUniformLocation(program,"u_"+name)]));
+    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE); gl.clearColor(0,0,0,0);
+  }
+  function resize() {
+    if(lost) return;
+    width=document.documentElement.clientWidth; height=innerHeight; dpr=Math.min(devicePixelRatio||1,1.5);
+    canvas.width=Math.round(width*dpr); canvas.height=Math.round(height*dpr); gl.viewport(0,0,canvas.width,canvas.height);
+    const rand=random(2680), data=[];
+    starCount=Math.min(1700,Math.floor(width*height/850));
+    for(let i=0;i<starCount;i++) data.push(rand()*2-1,rand()*2-1,rand(),.65+Math.pow(rand(),3)*2.1,.15+rand()*.6,0);
+    if(isHome) {
+      const particles=width<700?22000:65000;
+      for(let i=0;i<particles;i++) {
+        const y=rand()*2-1, angle=rand()*Math.PI*2, r=Math.sqrt(1-y*y);
+        const dust=i%9===0, radius=dust?1+Math.pow(rand(),3)*.16:1+(rand()-.5)*.016;
+        data.push(Math.cos(angle)*r*radius,y*radius,Math.sin(angle)*r*radius,.65+Math.pow(rand(),2)*1.7,dust?.20:.35+rand()*.6,1);
       }
     }
-    ctx.globalAlpha = 1;
+    count=data.length/6; gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW); draw();
+  }
+  function draw() {
+    if(lost) return;
+    offsetX+=(pointerX-offsetX)*.05; offsetY+=(pointerY-offsetY)*.05;
+    const fade=isHome?Math.max(0,1-scroll/740):0;
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform2f(uniforms.view,width,height);
+    gl.uniform2f(uniforms.center,width*(width<700?1.02:.85),Math.min(450,height*.48)-scroll*.16);
+    gl.uniform2f(uniforms.pointer,offsetX,offsetY);
+    gl.uniform1f(uniforms.radius,Math.min(width*.36,565));
+    gl.uniform1f(uniforms.time,elapsed/1000); gl.uniform1f(uniforms.fade,fade); gl.uniform1f(uniforms.dpr,dpr);
+    gl.drawArrays(gl.POINTS,0,fade>0?count:starCount);
   }
   function tick(time) {
-    frame = requestAnimationFrame(tick);
-    if (time - last < 42) return;
-    elapsed += Math.min(80,time-(last||time)); last=time; draw();
+    frame=requestAnimationFrame(tick);
+    if(time-last<42) return;
+    elapsed+=Math.min(80,time-(last||time)); last=time; draw();
   }
   function sync() {
     cancelAnimationFrame(frame); frame=0; last=0;
-    if (!document.hidden && !reduced.matches) frame=requestAnimationFrame(tick);
+    if(!document.hidden&&!reduced.matches&&!lost) frame=requestAnimationFrame(tick);
     else draw();
   }
-  window.addEventListener("pointermove", event => {
-    if (reduced.matches || event.pointerType !== "mouse") return;
-    pointerX=(event.clientX/width-.5)*12; pointerY=(event.clientY/height-.5)*9;
-  }, {passive:true});
-  window.addEventListener("scroll", () => { scroll=scrollY; if(reduced.matches) draw(); }, {passive:true});
-  window.addEventListener("resize", resize, {passive:true});
-  document.addEventListener("visibilitychange", sync); reduced.addEventListener("change", sync);
-  resize(); sync();
+  window.addEventListener("pointermove",event=>{
+    if(reduced.matches||event.pointerType!=="mouse") return;
+    pointerX=(event.clientX/width-.5)*16; pointerY=(event.clientY/height-.5)*12;
+  },{passive:true});
+  window.addEventListener("scroll",()=>{scroll=scrollY;if(reduced.matches) draw();},{passive:true});
+  window.addEventListener("resize",resize,{passive:true});
+  document.addEventListener("visibilitychange",sync); reduced.addEventListener("change",sync);
+  canvas.addEventListener("webglcontextlost",event=>{event.preventDefault();lost=true;cancelAnimationFrame(frame);});
+  canvas.addEventListener("webglcontextrestored",()=>{lost=false;init();resize();sync();});
+  try { init();resize();sync(); } catch { canvas.hidden=true; }
 })();

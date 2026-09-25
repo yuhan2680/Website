@@ -8,8 +8,7 @@
 }
 body { isolation:isolate; }
 body::before {
-  z-index:-2; opacity:.14; background-image:linear-gradient(90deg,#060b12 5%,#060b12f0 29%,#060b1280 65%,#060b1260),linear-gradient(0deg,#060b12 0%,#060b12d9 20%,#060b124d 100%),url('/assets/images/galactic-center.jpg');
-  background-size:cover; background-position:center,right center,right 30%;
+  z-index:-2; opacity:.14; background:radial-gradient(ellipse at 90% 25%,#183e6638,transparent 58%);
 }
 :root[data-theme="night"] body::before { opacity:1; }
 #space-canvas { position:fixed; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; opacity:.15; }
@@ -48,7 +47,6 @@ body::before {
 .page-intro h1 { font-weight:500; }
 .archive-tools,.archive-list { background:color-mix(in srgb,var(--bg) 70%,transparent); }
 .site-footer { border-color:var(--faint); }
-.image-credit { grid-row:3; grid-column:1/-1; font-size:9px; color:var(--muted); }
 .widget-button { background:var(--surface-solid); }
 @media (max-width:1000px) {
   .hero { min-height:510px; }
@@ -67,6 +65,4 @@ body::before {
   .home-index { margin-bottom:32px; }
   .home-index a:first-child { padding-left:0; }
   .home-index a { padding-block:13px; }
-  body::before { background-position:center,center,62% center; }
-  .image-credit { line-height:1.8; }
 }
