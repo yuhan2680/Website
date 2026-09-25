@@ -1,10 +1,2 @@
-cd [location]
-
-git init
-git remote add origin https://github.com/yuhan2680/Website.git
-git branch -M main
-
-git add .
-git commit -m "Update Website"
-
-git push -u origin main --force
+请参阅 README.md 中的开发、测试与部署说明。
+正常更新使用分支与 Pull Request；不要用强制推送覆盖远程历史。

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /template/
+Disallow: /index_test
+Sitemap: https://naiwenel.com/sitemap.xml
