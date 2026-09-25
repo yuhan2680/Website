@@ -9,15 +9,7 @@
   dock.setAttribute("aria-label", "Live2D");
   controls.replaceWith(dock);
   dock.append(controls);
-  const preferredSlot = document.querySelector("[data-live2d-slot]");
-  const slot = preferredSlot || document.createElement("div");
-  const hero = document.querySelector(".hero");
-  const artwork = hero?.querySelector(".hero-art");
-  if (!preferredSlot) {
-    slot.className = "live2d-inline-slot";
-    if (hero) hero.append(slot);
-    else document.querySelector(".site-footer").before(slot);
-  }
+  document.body.classList.add("has-live2d");
   let app, model, visible = false, busy = false, currentSkin = "green";
   try { currentSkin = localStorage.getItem("live2d-skin") === "blue" ? "blue" : "green"; } catch { /* optional */ }
   function loadScript(src) {
@@ -44,19 +36,12 @@
     skin.setAttribute("aria-label", `当前：${name}，切换为${currentSkin === "green" ? "蓝色蝴蝶结" : "绿色鸡蛋花"}`);
   }
   function fit() {
-    // The floating canvas must fit entirely in the empty left margin.
-    const gutter = Math.min(...[...document.querySelectorAll(".site-main,.menu-container,.site-footer")].map(el => el.getBoundingClientRect().left));
-    const inline = Boolean(preferredSlot) || gutter < 196 || innerHeight < 520;
-    dock.dataset.placement = inline ? "inline" : "floating";
-    slot.hidden = !inline;
-    if (artwork) artwork.hidden = inline;
-    if (dock.parentElement !== (inline ? slot : document.body)) (inline ? slot : document.body).append(dock);
-    const width = Math.floor(inline ? Math.min(280, slot.clientWidth) : Math.min(240, gutter - 28));
-    const headerBottom = document.querySelector(".site-header")?.getBoundingClientRect().bottom || 0;
-    const height = Math.floor(inline ? 340 : Math.min(360, innerHeight - headerBottom - 80));
+    // Reserve a rail for the fixed bottom-left character, including on narrow screens.
+    const width = Math.floor(innerWidth >= 1500 ? 240 : innerWidth >= 900 ? 180 : innerWidth >= 600 ? 140 : Math.max(72, Math.min(96, innerWidth * .24)));
+    const height = Math.floor(Math.min(400, innerHeight * .52, width * 1.6));
+    document.documentElement.style.setProperty("--live2d-rail", (width + (innerWidth < 600 ? 14 : 24)) + "px");
     dock.style.width = width + "px";
     dock.style.setProperty("--model-height", height + "px");
-    dock.style.left = inline ? "" : Math.max(12, (gutter - width) / 2) + "px";
     if (!app || !model) return;
     app.renderer.resize(width, height);
     model.scale.set(1);
@@ -75,6 +60,7 @@
   }
   function sync() {
     if (!app) return;
+    document.body.classList.toggle("has-live2d", visible);
     app.view.hidden = !visible;
     if (visible && !document.hidden && !reduced.matches) app.start();
     else { app.stop(); if (visible) renderStill(); }
@@ -103,6 +89,7 @@
     } catch {
       if (app) app.destroy(true, { children: true, texture: true, baseTexture: true });
       app = null; model = null; visible = false;
+      document.body.classList.remove("has-live2d");
       button.textContent = "重试";
       button.setAttribute("aria-label", "重新加载 Live2D");
       status.textContent = "Live2D 加载失败，请重试。";
