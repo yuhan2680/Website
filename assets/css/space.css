@@ -57,7 +57,7 @@ body::before {
   .latin-name { font-size:80px; }
 }
 @media (max-width:760px) {
-  .solar-scene { width:470px; top:125px; right:-300px; opacity:calc(var(--solar-opacity,1) * .7); }
+  .solar-scene { width:470px; top:125px; right:-205px; opacity:calc(var(--solar-opacity,1) * .7); }
   .menu-container { height:70px; }
   .hero { min-height:465px; padding:40px 0 38px; }
   .hero h1 { font-size:34px; }

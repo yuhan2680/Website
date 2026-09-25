@@ -8,7 +8,7 @@ import { onRequest } from '../functions/api/comments.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const database = new DatabaseSync(':memory:');
-database.exec('CREATE TABLE comments (id INTEGER PRIMARY KEY AUTOINCREMENT, post_id TEXT NOT NULL, nickname TEXT NOT NULL, content TEXT NOT NULL, created_at TEXT NOT NULL); CREATE INDEX comments_post_id_id ON comments(post_id, id DESC);');
+database.exec(await readFile(resolve(root, 'database/comments.sql'), 'utf8'));
 const env = { blog_comments: { prepare(sql) { return { bind(...args) { const statement = database.prepare(sql); return {
   async all() { return { results: statement.all(...args) }; },
   async run() { return { meta: { changes: Number(statement.run(...args).changes) } }; }
@@ -25,7 +25,7 @@ const server = http.createServer(async (req, res) => {
     }
     const pathname = decodeURIComponent(url.pathname);
     let file = resolve(root, '.' + pathname);
-    if (!file.startsWith(root) || pathname.split('/').some(part => part.startsWith('.')) || /^\/(functions|scripts|tests|archive|template)\//.test(pathname)) {
+    if (!file.startsWith(root) || pathname.split('/').some(part => part.startsWith('.')) || /^\/(functions|scripts|tests|database|archive|template)\//.test(pathname)) {
       res.writeHead(404); res.end('Not found'); return;
     }
     if (pathname === '/') file = resolve(root, 'index.html');
