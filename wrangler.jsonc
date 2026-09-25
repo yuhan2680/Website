@@ -1,0 +1,32 @@
+{
+  "name": "website",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2025-11-20",
+  "d1_databases": [
+    {
+      "binding": "blog_comments",
+      "database_name": "blog_comments_preview",
+      "database_id": "ed2e508c-88f7-4f79-8568-ec13f9be956d"
+    }
+  ],
+  "env": {
+    "preview": {
+      "d1_databases": [
+        {
+          "binding": "blog_comments",
+          "database_name": "blog_comments_preview",
+          "database_id": "ed2e508c-88f7-4f79-8568-ec13f9be956d"
+        }
+      ]
+    },
+    "production": {
+      "d1_databases": [
+        {
+          "binding": "blog_comments",
+          "database_name": "blog_comments",
+          "database_id": "5e8454e2-cdc2-41cf-9afc-b1bd3be00374"
+        }
+      ]
+    }
+  }
+}
