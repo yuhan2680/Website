@@ -4,7 +4,7 @@
   if (!button) return;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   let app, model, visible = false, busy = false, currentSkin = "green";
-  try { currentSkin = localStorage.getItem("live2d-skin") || "green"; } catch { /* optional */ }
+  try { currentSkin = localStorage.getItem("live2d-skin") === "blue" ? "blue" : "green"; } catch { /* optional */ }
   function loadScript(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script"); script.src = src;
@@ -19,57 +19,87 @@
     if (!core) return;
     const value = currentSkin === "green" ? 1 : 0;
     core.setParameterValueById("Param2", value); core.setParameterValueById("Param4", value);
+    core.setParameterValueById("Param9", 1);
+    core.setParameterValueById("Param8", value);
+  }
+  function updateSkinButton() {
+    skin.dataset.skin = currentSkin;
+    const name = currentSkin === "green" ? "绿色 · 鸡蛋花" : "蓝色 · 蝴蝶结";
+    skin.title = `当前：${name}（点击切换）`;
+    skin.setAttribute("aria-label", `当前：${name}，切换为${currentSkin === "green" ? "蓝色蝴蝶结" : "绿色鸡蛋花"}`);
   }
   function fit() {
     if (!app || !model) return;
-    const width = innerWidth < 600 ? 170 : 240, height = innerWidth < 600 ? 280 : Math.min(430, innerHeight * .55);
+    const mobile = innerWidth < 600;
+    const width = mobile ? Math.min(220, innerWidth * .56) : Math.max(300, Math.min(420, innerWidth * .26));
+    const height = mobile ? Math.min(340, innerHeight * .43) : Math.min(620, innerHeight * .72);
     app.renderer.resize(width, height);
     model.scale.set(1);
-    const bounds = model.getLocalBounds(), scale = Math.min(width * .92 / bounds.width, height * .95 / bounds.height);
+    const bounds = model.getLocalBounds();
+    // Keep the head and upper body large; the canvas crops the lower body.
+    const scale = Math.max(width * .94 / bounds.width, height * .95 / (bounds.height * .66));
     model.scale.set(scale);
-    // app.screen is in CSS pixels; renderer.width includes devicePixelRatio.
-    model.position.set(app.screen.width / 2 - (bounds.x + bounds.width / 2) * scale, app.screen.height - (bounds.y + bounds.height) * scale);
+    model.position.set(app.screen.width / 2 - (bounds.x + bounds.width / 2) * scale, 12 - bounds.y * scale);
+    if (!app.ticker.started) renderStill();
+  }
+  function renderStill() {
+    if (!model) return;
+    model.update(0);
+    model.internalModel.update(0, model.elapsedTime);
+    app.renderer.render(app.stage);
   }
   function sync() {
     if (!app) return;
     app.view.hidden = !visible;
     if (visible && !document.hidden && !reduced.matches) app.start();
-    else { app.stop(); if (visible) app.renderer.render(app.stage); }
+    else { app.stop(); if (visible) renderStill(); }
     skin.hidden = !visible;
-    button.textContent = visible ? "收起小涵" : "召唤小涵 ✧";
+    button.textContent = visible ? "隐藏" : "显示";
+    button.setAttribute("aria-label", visible ? "隐藏 Live2D" : "显示 Live2D");
     button.setAttribute("aria-pressed", String(visible));
   }
-  button.addEventListener("click", async () => {
+  async function loadModel() {
     if (busy) return;
-    if (app && model) { visible = !visible; sync(); return; }
-    busy = true; button.disabled = true; button.textContent = "小涵正在赶来…";
-    status.textContent = "首次加载约 16 MB，请稍候。";
+    busy = true; button.disabled = true; button.textContent = "加载中";
+    status.textContent = "";
     try {
       if (!window.PIXI) await loadScript("/live2d/libs/pixi.min.js");
       if (!window.Live2DCubismCore) await loadScript("/live2d/libs/live2dcubismcore.min.js");
       if (!window.PIXI.live2d) await loadScript("/live2d/libs/cubism4.min.js");
       app = new PIXI.Application({ width: 240, height: 430, transparent: true, antialias: true, autoDensity: true, resolution: Math.min(devicePixelRatio || 1, 2), autoStart: false });
-      app.view.id = "live2dCanvas"; app.view.setAttribute("aria-hidden", "true");
+      app.view.id = "live2dCanvas"; app.view.hidden = true; app.view.setAttribute("aria-hidden", "true");
       document.body.appendChild(app.view);
-      // Keep the existing model, expressions and skin parameters unchanged.
       model = await PIXI.live2d.Live2DModel.from(encodeURI("/live2d/小涵_vts/小涵 .model3.json"), { autoInteract: false, autoUpdate: false });
       app.stage.addChild(model); app.ticker.maxFPS = 30;
-      // Use one ticker so hiding the widget also stops model updates.
-      app.ticker.add(() => { model.update(app.ticker.deltaMS); applySkin(); });
-      fit(); applySkin(); visible = true; status.textContent = ""; sync();
+      // Apply outfit parameters after motion/physics and before Cubism updates the mesh.
+      model.internalModel.on("beforeModelUpdate", applySkin);
+      app.ticker.add(() => model.update(app.ticker.deltaMS));
+      fit(); updateSkinButton(); visible = true; status.textContent = ""; sync();
     } catch {
       if (app) app.destroy(true, { children: true, texture: true, baseTexture: true });
       app = null; model = null; visible = false;
-      button.textContent = "重新召唤小涵";
-      status.textContent = "小涵暂时没能到达，可以稍后重试。";
+      button.textContent = "重试";
+      button.setAttribute("aria-label", "重新加载 Live2D");
+      status.textContent = "Live2D 加载失败，请重试。";
     } finally { busy = false; button.disabled = false; }
+  }
+  button.addEventListener("click", () => {
+    if (busy) return;
+    if (app && model) { visible = !visible; sync(); }
+    else loadModel();
   });
   skin.addEventListener("click", () => {
     currentSkin = currentSkin === "green" ? "blue" : "green";
     try { localStorage.setItem("live2d-skin", currentSkin); } catch { /* optional */ }
-    applySkin(); sync();
+    updateSkinButton(); sync();
   });
   window.addEventListener("resize", fit, { passive: true });
-  window.addEventListener("pointermove", (event) => { if (visible && !reduced.matches && event.pointerType === "mouse") model?.focus(event.clientX, event.clientY); }, { passive: true });
+  window.addEventListener("pointermove", (event) => {
+    if (!visible || reduced.matches || event.pointerType !== "mouse") return;
+    const bounds = app.view.getBoundingClientRect();
+    model?.focus(event.clientX - bounds.left, event.clientY - bounds.top);
+  }, { passive: true });
   document.addEventListener("visibilitychange", sync); reduced.addEventListener("change", sync);
+  updateSkinButton();
+  loadModel();
 })();
