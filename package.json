@@ -1,0 +1,11 @@
+{
+  "name": "naiwenel-journal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "node --test tests/*.test.js",
+    "dev": "node scripts/dev-server.js"
+  },
+  "engines": { "node": ">=22.13" }
+}
