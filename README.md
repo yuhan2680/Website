@@ -24,7 +24,7 @@ node scripts/build.js
 - 沿用 `comments(id, post_id, nickname, content, created_at)` 表，不需要数据迁移。`id` 应为自增整数主键。数据多时可在 D1 增加 `CREATE INDEX IF NOT EXISTS comments_post_id_id ON comments(post_id, id DESC);`。
 - `_routes.json` 仅让 `/api/*` 调用 Functions。静态资源继续由 Pages CDN 提供。
 - `_headers` 配置静态安全头和模型缓存；API 自行返回 `Cache-Control: no-store`。
-- 在 Pages → Custom domains 中绑定域名后，`_redirects` 才负责将额外域名跳转到主站，保留文章路径。
+- 在 Pages → Custom domains 中绑定域名后，使用 Cloudflare Bulk Redirects 将额外域名跳转到主站，并启用子路径匹配、路径后缀保留和查询参数保留。Pages 的 `_redirects` 不支持按域名匹配，仅用于本站路径跳转。
 
 ## 内容维护
 
