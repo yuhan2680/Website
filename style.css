@@ -199,3 +199,7 @@ body.has-live2d .site-main,body.has-live2d .site-footer { width:min(var(--conten
   html:not(.js) .hamburger,html:not(.js) #nightToggle,html:not(.js) .live2d-controls { display:none; }
 }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { animation:none !important; transition:none !important; } }
+@media (orientation:portrait) {
+  .live2d-dock { display:none; }
+  body.has-live2d .site-main,body.has-live2d .site-footer { width:auto; margin-inline:22px; }
+}

@@ -3,13 +3,14 @@
   const button = document.getElementById("live2dToggle"), skin = document.getElementById("live2dSkin"), status = document.getElementById("live2dStatus");
   if (!button) return;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const portrait = matchMedia("(orientation: portrait)");
   const controls = button.closest(".live2d-controls");
   const dock = document.createElement("aside");
   dock.className = "live2d-dock";
   dock.setAttribute("aria-label", "Live2D");
   controls.replaceWith(dock);
   dock.append(controls);
-  document.body.classList.add("has-live2d");
+  document.body.classList.toggle("has-live2d", !portrait.matches);
   let app, model, visible = false, busy = false, currentSkin = "green";
   try { currentSkin = localStorage.getItem("live2d-skin") === "blue" ? "blue" : "green"; } catch { /* optional */ }
   function loadScript(src) {
@@ -60,10 +61,11 @@
   }
   function sync() {
     if (!app) return;
-    document.body.classList.toggle("has-live2d", visible);
-    app.view.hidden = !visible;
-    if (visible && !document.hidden && !reduced.matches) app.start();
-    else { app.stop(); if (visible) renderStill(); }
+    const showing = visible && !portrait.matches;
+    document.body.classList.toggle("has-live2d", showing);
+    app.view.hidden = !showing;
+    if (showing && !document.hidden && !reduced.matches) app.start();
+    else { app.stop(); if (showing) renderStill(); }
     skin.hidden = !visible;
     button.textContent = visible ? "隐藏" : "显示";
     button.setAttribute("aria-label", visible ? "隐藏 Live2D" : "显示 Live2D");
@@ -107,12 +109,16 @@
   });
   window.addEventListener("resize", fit, { passive: true });
   window.addEventListener("pointermove", (event) => {
-    if (!visible || reduced.matches || event.pointerType !== "mouse") return;
+    if (!visible || portrait.matches || reduced.matches || event.pointerType !== "mouse") return;
     const bounds = app.view.getBoundingClientRect();
     model?.focus(event.clientX - bounds.left, event.clientY - bounds.top);
   }, { passive: true });
   document.addEventListener("visibilitychange", sync); reduced.addEventListener("change", sync);
+  portrait.addEventListener("change", () => {
+    if (!portrait.matches && !app && !busy) loadModel();
+    sync(); fit();
+  });
   fit();
   updateSkinButton();
-  loadModel();
+  if (!portrait.matches) loadModel();
 })();
