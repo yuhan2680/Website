@@ -3,6 +3,21 @@
   const button = document.getElementById("live2dToggle"), skin = document.getElementById("live2dSkin"), status = document.getElementById("live2dStatus");
   if (!button) return;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const controls = button.closest(".live2d-controls");
+  const dock = document.createElement("aside");
+  dock.className = "live2d-dock";
+  dock.setAttribute("aria-label", "Live2D");
+  controls.replaceWith(dock);
+  dock.append(controls);
+  const preferredSlot = document.querySelector("[data-live2d-slot]");
+  const slot = preferredSlot || document.createElement("div");
+  const hero = document.querySelector(".hero");
+  const artwork = hero?.querySelector(".hero-art");
+  if (!preferredSlot) {
+    slot.className = "live2d-inline-slot";
+    if (hero) hero.append(slot);
+    else document.querySelector(".site-footer").before(slot);
+  }
   let app, model, visible = false, busy = false, currentSkin = "green";
   try { currentSkin = localStorage.getItem("live2d-skin") === "blue" ? "blue" : "green"; } catch { /* optional */ }
   function loadScript(src) {
@@ -29,10 +44,20 @@
     skin.setAttribute("aria-label", `当前：${name}，切换为${currentSkin === "green" ? "蓝色蝴蝶结" : "绿色鸡蛋花"}`);
   }
   function fit() {
+    // The floating canvas must fit entirely in the empty left margin.
+    const gutter = Math.min(...[...document.querySelectorAll(".site-main,.menu-container,.site-footer")].map(el => el.getBoundingClientRect().left));
+    const inline = Boolean(preferredSlot) || gutter < 196 || innerHeight < 520;
+    dock.dataset.placement = inline ? "inline" : "floating";
+    slot.hidden = !inline;
+    if (artwork) artwork.hidden = inline;
+    if (dock.parentElement !== (inline ? slot : document.body)) (inline ? slot : document.body).append(dock);
+    const width = Math.floor(inline ? Math.min(280, slot.clientWidth) : Math.min(240, gutter - 28));
+    const headerBottom = document.querySelector(".site-header")?.getBoundingClientRect().bottom || 0;
+    const height = Math.floor(inline ? 340 : Math.min(360, innerHeight - headerBottom - 80));
+    dock.style.width = width + "px";
+    dock.style.setProperty("--model-height", height + "px");
+    dock.style.left = inline ? "" : Math.max(12, (gutter - width) / 2) + "px";
     if (!app || !model) return;
-    const mobile = innerWidth < 600;
-    const width = mobile ? Math.min(220, innerWidth * .56) : Math.max(300, Math.min(420, innerWidth * .26));
-    const height = mobile ? Math.min(340, innerHeight * .43) : Math.min(620, innerHeight * .72);
     app.renderer.resize(width, height);
     model.scale.set(1);
     const bounds = model.getLocalBounds();
@@ -68,7 +93,7 @@
       if (!window.PIXI.live2d) await loadScript("/live2d/libs/cubism4.min.js");
       app = new PIXI.Application({ width: 240, height: 430, transparent: true, antialias: true, autoDensity: true, resolution: Math.min(devicePixelRatio || 1, 2), autoStart: false });
       app.view.id = "live2dCanvas"; app.view.hidden = true; app.view.setAttribute("aria-hidden", "true");
-      document.body.appendChild(app.view);
+      dock.prepend(app.view);
       model = await PIXI.live2d.Live2DModel.from(encodeURI("/live2d/小涵_vts/小涵 .model3.json"), { autoInteract: false, autoUpdate: false });
       app.stage.addChild(model); app.ticker.maxFPS = 30;
       // Apply outfit parameters after motion/physics and before Cubism updates the mesh.
@@ -100,6 +125,7 @@
     model?.focus(event.clientX - bounds.left, event.clientY - bounds.top);
   }, { passive: true });
   document.addEventListener("visibilitychange", sync); reduced.addEventListener("change", sync);
+  fit();
   updateSkinButton();
   loadModel();
 })();
