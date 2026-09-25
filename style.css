@@ -178,4 +178,10 @@ textarea { resize:vertical; min-height:110px; }
   .page-intro { padding:40px 0 18px; }.page-intro h1 { font-size:29px; }.page-intro>p:last-child { font-size:13px; }.archive-tools { gap:15px; }.filter-group { gap:6px; }.filter-group button { padding:7px 10px; font-size:11px; }.archive-list { grid-template-columns:1fr; gap:15px; }.archive-list .post-card { padding:24px; }.reading-layout { margin-top:28px; }.article-container { padding:25px 22px; }.article-header h1 { font-size:28px; }.article-content { font-size:15px; line-height:2; }.article-footer { line-height:1.9; }.post-neighbors { gap:12px; }.post-neighbors a { padding:14px; }.post-neighbors strong { font-size:12px; }.about-layout { display:block; padding:28px 24px; }.about-photo { margin-bottom:28px; }.about-photo img { width:140px; height:140px; }.friend-container { grid-template-columns:1fr; gap:13px; }.friend-card { padding:23px; }.friend-card h2 { font-size:16px; }.friend-info { padding:24px; }.friend-info dl>div { gap:15px; }.donate-grid { grid-template-columns:1fr 1fr; gap:10px; }.support-links { padding:24px; }.donate-grid a { padding:13px; font-size:12px; }
   .site-footer { margin-top:48px; padding-top:28px; padding-bottom:86px; display:flex; flex-direction:column; gap:12px; }.site-footer small { text-align:left; }.live2d-controls { left:12px; bottom:12px; }.widget-button { font-size:10px; padding:7px 12px; }#backToTop { right:12px; bottom:12px; }.empty-page h1 { font-size:26px; }
 }
+@media (max-width:680px) {
+  html:not(.js) .menu-container { height:auto; min-height:73px; flex-wrap:wrap; padding:15px 0; }
+  html:not(.js) .menu-function { width:100%; }
+  html:not(.js) .menu-list { display:flex; position:static; width:100%; flex-direction:row; flex-wrap:wrap; box-shadow:none; padding:0; border:0; }
+  html:not(.js) .hamburger,html:not(.js) #nightToggle,html:not(.js) .live2d-controls { display:none; }
+}
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { animation:none !important; transition:none !important; } }

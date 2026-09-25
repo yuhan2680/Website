@@ -6,7 +6,7 @@
   const more = document.getElementById("loadMoreComments"), retry = document.getElementById("retryComments");
   const nickname = document.getElementById("nickname"), content = document.getElementById("comment");
   const endpoint = `/api/comments?post=${encodeURIComponent(document.body.dataset.postId)}`;
-  let cursor = null, loading = false, nextSubmit = 0, sending = false;
+  let cursor = null, loading = false, nextSubmit = 0, sending = false, pendingRefresh = false;
   try { nickname.value = localStorage.getItem("naiwenel-nickname") || ""; } catch { /* optional */ }
   async function request(url, options = {}) {
     const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 12000);
@@ -34,7 +34,7 @@
     item.append(nick, text, time); return item;
   }
   async function load(append = false) {
-    if (loading) return;
+    if (loading) { if (!append) pendingRefresh = true; return; }
     loading = true; retry.hidden = true; more.disabled = true; list.setAttribute("aria-busy", "true");
     try {
       const { response, data } = await request(endpoint + (append && cursor ? `&before=${encodeURIComponent(cursor)}` : ""));
@@ -46,7 +46,10 @@
       if (!append) list.textContent = "评论暂时无法加载。";
       status.textContent = error instanceof TypeError ? "网络连接失败，请稍后重试。" : error.message;
       retry.hidden = false; retry.dataset.append = String(append);
-    } finally { loading = false; more.disabled = false; list.setAttribute("aria-busy", "false"); }
+    } finally {
+      loading = false; more.disabled = false; list.setAttribute("aria-busy", "false");
+      if (pendingRefresh) { pendingRefresh = false; load(); }
+    }
   }
   more.addEventListener("click", () => load(true));
   retry.addEventListener("click", () => { status.textContent = ""; load(retry.dataset.append === "true"); });

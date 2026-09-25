@@ -1,7 +1,7 @@
 // Local preview only. The database stays in memory and never touches production D1.
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
-import { resolve, extname, sep } from 'node:path';
+import { resolve, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { onRequest } from '../functions/api/comments.js';

@@ -1,8 +1,7 @@
-import { mkdir, copyFile, cp, readdir, rm } from 'node:fs/promises';
+import { mkdir, copyFile, cp, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 const root = process.cwd();
 const output = resolve(root, 'dist');
-if (output !== resolve(root, 'dist')) throw new Error('Unexpected output path');
 await mkdir(output, { recursive: true });
 // Only explicit public assets enter the deployment; no tests, templates or local data.
 for (const name of await readdir(root)) {

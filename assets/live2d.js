@@ -52,8 +52,10 @@
       app.view.id = "live2dCanvas"; app.view.setAttribute("aria-hidden", "true");
       document.body.appendChild(app.view);
       // Keep the existing model, expressions and skin parameters unchanged.
-      model = await PIXI.live2d.Live2DModel.from(encodeURI("/live2d/小涵_vts/小涵 .model3.json"), { autoInteract: false });
-      app.stage.addChild(model); app.ticker.maxFPS = 30; app.ticker.add(applySkin);
+      model = await PIXI.live2d.Live2DModel.from(encodeURI("/live2d/小涵_vts/小涵 .model3.json"), { autoInteract: false, autoUpdate: false });
+      app.stage.addChild(model); app.ticker.maxFPS = 30;
+      // Use one ticker so hiding the widget also stops model updates.
+      app.ticker.add(() => { model.update(app.ticker.deltaMS); applySkin(); });
       fit(); applySkin(); visible = true; status.textContent = ""; sync();
     } catch {
       if (app) app.destroy(true, { children: true, texture: true, baseTexture: true });
