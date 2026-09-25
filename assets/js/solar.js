@@ -29,19 +29,20 @@
 
     const compact = width < 700;
     const unit = Math.min(width / 1699, 1.25);
+    const verticalUnit = Math.min(unit, (bottom - header) / 570);
     const sun = compact
-      ? { x: width * 1.48, y: header + 230, radius: width * .66 }
-      : { x: width + 190 * unit, y: header + 300 * unit, radius: 570 * unit };
+      ? { x: width * 1.54, y: header + 230, radius: width * .66 }
+      : { x: width + 190 * unit, y: header + 300 * verticalUnit, radius: 570 * unit };
     const planets = compact ? [
       { x: width * .86, y: header + 145, radius: 9 },
       { x: width * .81, y: header + 250, radius: 14 },
       { x: width * .79, y: header + 340, radius: 17, ring: true },
       { x: width * .96, y: header + 402, radius: 8 }
     ] : [
-      { x: width - 735 * unit, y: header + 145 * unit, radius: 24 * unit },
-      { x: width - 575 * unit, y: header + 270 * unit, radius: 42 * unit },
-      { x: width - 665 * unit, y: header + 420 * unit, radius: 50 * unit, ring: true },
-      { x: width - 455 * unit, y: header + 510 * unit, radius: 22 * unit }
+      { x: width - 735 * unit, y: header + 145 * verticalUnit, radius: 24 * unit },
+      { x: width - 575 * unit, y: header + 270 * verticalUnit, radius: 42 * unit },
+      { x: width - 665 * unit, y: header + 420 * verticalUnit, radius: 50 * unit, ring: true },
+      { x: width - 455 * unit, y: header + 510 * verticalUnit, radius: 22 * unit }
     ];
 
     // Batch the tiny points by opacity and size; the scene is drawn only on resize.
@@ -84,8 +85,8 @@
       orbit(sun.x + 30, sun.y, width * .86, 176, -.12);
       orbit(sun.x + 30, sun.y - 25, width * .71, 106, .12);
     } else {
-      orbit(width + 160 * unit, header + 280 * unit, 1010 * unit, 302 * unit, -.035);
-      orbit(width + 110 * unit, header + 265 * unit, 735 * unit, 187 * unit, .075);
+      orbit(width + 160 * unit, header + 280 * verticalUnit, 1010 * unit, 302 * verticalUnit, -.035);
+      orbit(width + 110 * unit, header + 265 * verticalUnit, 735 * unit, 187 * verticalUnit, .075);
     }
     context.restore();
 
@@ -97,7 +98,7 @@
 
     function sphere(body, seed, isSun) {
       const rand = random(seed);
-      const points = cloud(isSun ? "186,147,83" : "112,140,157");
+      const points = cloud(isSun ? "186,147,83" : "103,133,153");
       const count = isSun ? (compact ? 48000 : 158000) : Math.max(440, Math.round(body.radius ** 2 * 2.7));
       for (let i = 0; i < count; i++) {
         const y = rand() * 2 - 1, angle = rand() * Math.PI * 2;
@@ -106,19 +107,19 @@
         const shell = i % 13 === 0 ? 1 + rand() * .035 : 1;
         const rim = (1 - z) ** 2;
         const light = Math.max(0, x * .75 - y * .25 + z * .6);
-        const opacity = isSun ? .22 + rim * .43 + rand() * .22 : .18 + light * .3 + rim * .18 + rand() * .18;
+        const opacity = isSun ? .22 + rim * .43 + rand() * .22 : .24 + light * .38 + rim * .2 + rand() * .16;
         points.point(body.x + x * body.radius * shell, body.y + y * body.radius * shell, .23 + rand() * (isSun ? .58 : .4), opacity);
       }
       points.paint();
       if (body.ring) {
-        const ring = cloud("112,140,157");
+        const ring = cloud("103,133,153");
         const tilt = .24, cs = Math.cos(tilt), sn = Math.sin(tilt);
         for (let i = 0; i < 1600; i++) {
           const t = rand() * Math.PI * 2, spread = 1 + rand() * .065;
           const x = Math.cos(t) * body.radius * 1.68 * spread, y = Math.sin(t) * body.radius * .38 * spread;
           // The back of the ring passes behind the particle sphere.
           if (Math.sin(t) < 0 && x * x + y * y < body.radius ** 2) continue;
-          ring.point(body.x + x * cs - y * sn, body.y + x * sn + y * cs, .23 + rand() * .24, .25 + rand() * .33);
+          ring.point(body.x + x * cs - y * sn, body.y + x * sn + y * cs, .23 + rand() * .24, .3 + rand() * .33);
         }
         ring.paint();
       }
