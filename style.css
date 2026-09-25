@@ -156,3 +156,7 @@ body.has-live2d .site-main,body.has-live2d .site-footer { width:min(var(--conten
   .donate-grid { grid-template-columns:1fr; }.post-neighbors { grid-template-columns:1fr; }.friend-card { flex-wrap:wrap; }.site-footer>div { flex-wrap:wrap; }
   .hero-actions { gap:18px; }.hero-actions .button { padding-inline:14px; gap:14px; }
 }
+@media (orientation:portrait) {
+  .live2d-dock { display:none; }
+  body.has-live2d .site-main,body.has-live2d .site-footer { width:min(1180px,calc(100% - 40px)); margin-inline:auto; }
+}
