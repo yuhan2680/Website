@@ -94,7 +94,11 @@
     updateSkinButton(); sync();
   });
   window.addEventListener("resize", fit, { passive: true });
-  window.addEventListener("pointermove", (event) => { if (visible && !reduced.matches && event.pointerType === "mouse") model?.focus(event.clientX, event.clientY); }, { passive: true });
+  window.addEventListener("pointermove", (event) => {
+    if (!visible || reduced.matches || event.pointerType !== "mouse") return;
+    const bounds = app.view.getBoundingClientRect();
+    model?.focus(event.clientX - bounds.left, event.clientY - bounds.top);
+  }, { passive: true });
   document.addEventListener("visibilitychange", sync); reduced.addEventListener("change", sync);
   updateSkinButton();
   loadModel();
