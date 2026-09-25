@@ -4,6 +4,8 @@
   if (!canvas) return;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const isHome = Boolean(document.querySelector(".hero"));
+  const solarScene = document.querySelector(".solar-scene");
+  const isNight = () => document.documentElement.dataset.theme === "night";
   const gl = canvas.getContext("webgl", { alpha: true, antialias: false, depth: false, powerPreference: "low-power" });
   let width = 0, height = 0, dpr = 1, frame = 0, last = 0, elapsed = 0, lost = false;
   let pointerX = 0, pointerY = 0, offsetX = 0, offsetY = 0, scroll = scrollY;
@@ -11,6 +13,11 @@
 
   function random(seed) {
     return () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  }
+  function updateSolar() {
+    if (!solarScene) return;
+    solarScene.style.setProperty("--solar-opacity", Math.max(0, 1 - scroll / 700));
+    solarScene.style.setProperty("--solar-offset", `${-scroll * .12}px`);
   }
   // The content stays usable without WebGL; retain a static field of stars.
   if (!gl) {
@@ -24,7 +31,10 @@
         ctx.fillRect(rand()*canvas.width,rand()*canvas.height,.5+rand(),.5+rand());
       }
     };
-    fallback(); window.addEventListener("resize",fallback,{passive:true}); return;
+    fallback(); updateSolar();
+    window.addEventListener("resize",fallback,{passive:true});
+    window.addEventListener("scroll",()=>{scroll=scrollY;updateSolar();},{passive:true});
+    return;
   }
   function shader(type, source) {
     const compiled = gl.createShader(type);
@@ -109,7 +119,7 @@
     count=data.length/6; gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW); draw();
   }
   function draw() {
-    if(lost) return;
+    if(lost || !uniforms || !isNight()) return;
     offsetX+=(pointerX-offsetX)*.05; offsetY+=(pointerY-offsetY)*.05;
     const fade=isHome?Math.max(0,1-scroll/740):0;
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -127,17 +137,19 @@
   }
   function sync() {
     cancelAnimationFrame(frame); frame=0; last=0;
-    if(!document.hidden&&!reduced.matches&&!lost) frame=requestAnimationFrame(tick);
+    if(!document.hidden&&!reduced.matches&&!lost&&isNight()&&uniforms) frame=requestAnimationFrame(tick);
     else draw();
   }
   window.addEventListener("pointermove",event=>{
     if(reduced.matches||event.pointerType!=="mouse") return;
     pointerX=(event.clientX/width-.5)*16; pointerY=(event.clientY/height-.5)*12;
   },{passive:true});
-  window.addEventListener("scroll",()=>{scroll=scrollY;if(reduced.matches) draw();},{passive:true});
+  window.addEventListener("scroll",()=>{scroll=scrollY;updateSolar();if(reduced.matches) draw();},{passive:true});
   window.addEventListener("resize",resize,{passive:true});
   document.addEventListener("visibilitychange",sync); reduced.addEventListener("change",sync);
+  new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
   canvas.addEventListener("webglcontextlost",event=>{event.preventDefault();lost=true;cancelAnimationFrame(frame);});
   canvas.addEventListener("webglcontextrestored",()=>{lost=false;init();resize();sync();});
-  try { init();resize();sync(); } catch { canvas.hidden=true; }
+  updateSolar();
+  try { init();resize();sync(); } catch { canvas.hidden=true; lost=true; }
 })();

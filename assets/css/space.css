@@ -1,6 +1,6 @@
 :root {
-  --bg:#eef2f6; --surface:#f8fafce8; --surface-solid:#fff; --text:#223244; --muted:#556979;
-  --faint:#cbd6df; --accent:#276b91; --accent-hover:#1b5070; --tint:#dbe8ef; --blue:#276b91;
+  --bg:#f5f3ec; --surface:#fffef9ed; --surface-solid:#fffefb; --text:#293c46; --muted:#596d74;
+  --faint:#d4d9d3; --accent:#286c7b; --accent-hover:#1c515e; --tint:#e4ece7; --blue:#32788d;
 }
 :root[data-theme="night"] {
   --bg:#060b12; --surface:#09111eea; --surface-solid:#0e1a29; --text:#e9edf2; --muted:#a0aebf;
@@ -8,11 +8,13 @@
 }
 body { isolation:isolate; }
 body::before {
-  z-index:-2; opacity:.14; background:radial-gradient(ellipse at 90% 25%,#183e6638,transparent 58%);
+  z-index:-2; opacity:1; background:radial-gradient(ellipse at 88% 28%,#edd8a329,transparent 54%),radial-gradient(ellipse at 10% 78%,#b9d9df24,transparent 50%);
 }
-:root[data-theme="night"] body::before { opacity:1; }
-#space-canvas { position:fixed; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; opacity:.15; }
+:root[data-theme="night"] body::before { background:radial-gradient(ellipse at 90% 25%,#183e6638,transparent 58%); }
+#space-canvas { position:fixed; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; opacity:0; transition:opacity .4s; }
 :root[data-theme="night"] #space-canvas { opacity:1; }
+.solar-scene { position:fixed; z-index:-1; top:78px; right:-4vw; width:min(960px,62vw); aspect-ratio:12/11; pointer-events:none; background:url("../images/solar-system.svg") center/contain no-repeat; opacity:var(--solar-opacity,1); transform:translateY(var(--solar-offset,0px)); transition:opacity .4s; }
+:root[data-theme="night"] .solar-scene { opacity:0; visibility:hidden; }
 .site-header { background:color-mix(in srgb,var(--bg) 83%,transparent); border-color:color-mix(in srgb,var(--faint) 60%,transparent); }
 .menu-container { height:88px; }
 .brand-en { letter-spacing:.24em; }
@@ -49,11 +51,13 @@ body::before {
 .site-footer { border-color:var(--faint); }
 .widget-button { background:var(--surface-solid); }
 @media (max-width:1000px) {
+  .solar-scene { width:65vw; right:-12vw; top:120px; }
   .hero { min-height:510px; }
   .hero h1 { font-size:36px; }
   .latin-name { font-size:80px; }
 }
 @media (max-width:760px) {
+  .solar-scene { width:470px; top:125px; right:-300px; opacity:calc(var(--solar-opacity,1) * .7); }
   .menu-container { height:70px; }
   .hero { min-height:465px; padding:40px 0 38px; }
   .hero h1 { font-size:34px; }

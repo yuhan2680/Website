@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 880" fill="none">
+  <defs>
+    <radialGradient id="halo">
+      <stop stop-color="#efb74f" stop-opacity=".42"/>
+      <stop offset=".47" stop-color="#f4c967" stop-opacity=".24"/>
+      <stop offset="1" stop-color="#f9df97" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sun" cx=".36" cy=".32" r=".72">
+      <stop stop-color="#fff6be"/>
+      <stop offset=".35" stop-color="#f9d573"/>
+      <stop offset=".8" stop-color="#efa644"/>
+      <stop offset="1" stop-color="#d98236"/>
+    </radialGradient>
+    <radialGradient id="ocean" cx=".78" cy=".25" r=".95">
+      <stop stop-color="#e0f7ee"/>
+      <stop offset=".35" stop-color="#73b3c0"/>
+      <stop offset=".67" stop-color="#39718f"/>
+      <stop offset="1" stop-color="#253e59"/>
+    </radialGradient>
+    <radialGradient id="rust" cx=".26" cy=".7" r=".95">
+      <stop stop-color="#fae3b8"/>
+      <stop offset=".3" stop-color="#dca270"/>
+      <stop offset=".75" stop-color="#a46850"/>
+      <stop offset="1" stop-color="#694b44"/>
+    </radialGradient>
+    <radialGradient id="stone" cx=".7" cy=".78" r=".95">
+      <stop stop-color="#eee8d6"/>
+      <stop offset=".45" stop-color="#b4b8b1"/>
+      <stop offset="1" stop-color="#6d7f84"/>
+    </radialGradient>
+    <radialGradient id="sand" cx=".28" cy=".22" r="1">
+      <stop stop-color="#fff1c8"/>
+      <stop offset=".42" stop-color="#d4bb91"/>
+      <stop offset=".72" stop-color="#a48f7d"/>
+      <stop offset="1" stop-color="#5a6472"/>
+    </radialGradient>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".14" numOctaves="3" seed="26"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+      <feBlend in="SourceGraphic" mode="soft-light"/>
+    </filter>
+    <clipPath id="oceanClip"><circle cx="263" cy="519" r="42"/></clipPath>
+    <clipPath id="sandClip"><circle cx="762" cy="594" r="57"/></clipPath>
+  </defs>
+  <circle cx="562" cy="369" r="290" fill="url(#halo)"/>
+  <g stroke="#a8aaa1" stroke-width="1" transform="rotate(-24 562 369)">
+    <ellipse cx="562" cy="369" rx="178" ry="119" opacity=".44"/>
+    <ellipse cx="562" cy="369" rx="287" ry="191" opacity=".4"/>
+    <ellipse cx="562" cy="369" rx="402" ry="268" opacity=".34"/>
+    <ellipse cx="562" cy="369" rx="511" ry="341" opacity=".24"/>
+  </g>
+  <g stroke="#bf9e68" stroke-width=".7" opacity=".4">
+    <circle cx="562" cy="369" r="131"/>
+    <circle cx="562" cy="369" r="138" stroke-dasharray="1 9"/>
+  </g>
+  <circle cx="562" cy="369" r="122" fill="url(#sun)" filter="url(#grain)"/>
+  <circle cx="562" cy="369" r="122" stroke="#fff4c8" stroke-opacity=".65"/>
+  <circle cx="445" cy="240" r="18" fill="url(#stone)"/>
+  <circle cx="263" cy="519" r="44" fill="#96c6cf" opacity=".22"/>
+  <circle cx="263" cy="519" r="42" fill="url(#ocean)"/>
+  <g clip-path="url(#oceanClip)" stroke-linecap="round">
+    <path d="M237 485c22 18 39-2 55 8m-62 22c30 8 24 24 65 18m-55 17c12-7 25-2 33 5" stroke="#e5f7e8" stroke-width="6" opacity=".28"/>
+    <path d="M250 485c6 10 15 11 17 20s-8 15-1 22 10 4 14 13" stroke="#9fbb91" stroke-width="10" opacity=".35"/>
+  </g>
+  <circle cx="791" cy="132" r="29" fill="url(#rust)"/>
+  <circle cx="782" cy="129" r="6" fill="#856854" opacity=".18"/>
+  <circle cx="798" cy="144" r="10" fill="#704c3d" opacity=".13"/>
+  <g transform="rotate(-25 762 594)">
+    <ellipse cx="762" cy="594" rx="102" ry="31" stroke="#baa68e" stroke-width="12" opacity=".35"/>
+    <ellipse cx="762" cy="594" rx="91" ry="26" stroke="#9f9689" stroke-width="2" opacity=".45"/>
+  </g>
+  <circle cx="762" cy="594" r="57" fill="url(#sand)"/>
+  <g clip-path="url(#sandClip)" stroke="#947d6e" opacity=".19" transform="rotate(-25 762 594)">
+    <path d="M700 570h124m-125 12h125m-126 20h126m-124 17h124" stroke-width="6"/>
+  </g>
+  <g transform="rotate(-25 762 594)">
+    <path d="M660 594a102 31 0 0 0 204 0" stroke="#c8b699" stroke-width="12" opacity=".9"/>
+    <path d="M650 594a112 36 0 0 0 224 0" stroke="#b9ae9e" opacity=".45"/>
+    <path d="M671 594a91 26 0 0 0 182 0" stroke="#897f76" stroke-width="2" opacity=".55"/>
+  </g>
+  <g fill="#899c9f" opacity=".4">
+    <circle cx="196" cy="267" r="1.4"/><circle cx="833" cy="419" r="1.4"/>
+    <circle cx="480" cy="692" r="1.1"/><circle cx="664" cy="69" r="1.1"/>
+    <circle cx="82" cy="537" r="1"/><circle cx="388" cy="80" r="1"/>
+  </g>
+</svg>

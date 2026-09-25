@@ -37,7 +37,7 @@
   window.addEventListener("scroll", updateTop, { passive: true });
   top?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: reduced.matches ? "instant" : "smooth" }));
   updateTop();
-  document.querySelectorAll(".friend-card img").forEach((img) => img.addEventListener("error", () => { img.src = "/avatar_logo.jpg"; }, { once: true }));
+  document.querySelectorAll(".friend-card img").forEach((img) => img.addEventListener("error", () => { img.src = "/assets/images/avatar-logo.jpg"; }, { once: true }));
 
   const search = document.getElementById("postSearch"), filters = document.querySelectorAll("[data-filter]");
   let category = "all";

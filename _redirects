@@ -1,3 +1,13 @@
 # Domain redirects are configured in Cloudflare Bulk Redirects.
 # Pages _redirects supports path sources, not domain-level sources.
 /index_test / 301
+
+# Preserve previously published asset URLs after the directory cleanup.
+/style.css /assets/css/site.css 301
+/assets/space.css /assets/css/space.css 301
+/assets/theme.js /assets/js/theme.js 301
+/assets/site.js /assets/js/site.js 301
+/assets/live2d.js /assets/js/live2d.js 301
+/assets/comments.js /assets/js/comments.js 301
+/assets/space.js /assets/js/space.js 301
+/avatar_logo.jpg /assets/images/avatar-logo.jpg 301
