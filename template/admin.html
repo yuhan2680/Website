@@ -26,7 +26,13 @@
         <p id="slugHint" class="field-hint">地址使用小写英文字母、数字、短横线或下划线。发布后保持固定。</p>
         <label for="postExcerpt">摘要</label><textarea id="postExcerpt" name="excerpt" maxlength="300" rows="2" placeholder="文章列表中显示的简介"></textarea>
         <div class="editor-tabs" role="tablist" aria-label="正文视图"><button type="button" id="writeTab" role="tab" aria-selected="true" aria-controls="writePanel">编辑</button><button type="button" id="previewTab" role="tab" aria-selected="false" aria-controls="previewPanel">预览</button><span class="subtle">Markdown</span></div>
-        <div id="writePanel" role="tabpanel" aria-labelledby="writeTab"><div class="format-tools" aria-label="插入 Markdown"><button type="button" data-format="heading">标题</button><button type="button" data-format="bold">粗体</button><button type="button" data-format="list">列表</button><button type="button" data-format="link">链接</button><button type="button" data-format="image">图片链接</button><button type="button" data-format="code">代码</button></div><label class="sr-only" for="postMarkdown">正文</label><textarea id="postMarkdown" name="markdown" required maxlength="100000" spellcheck="false" placeholder="在这里写正文…"></textarea></div>
+        <div id="writePanel" role="tabpanel" aria-labelledby="writeTab">
+          <div class="format-tools" aria-label="插入 Markdown"><button type="button" data-format="heading">标题</button><button type="button" data-format="bold">粗体</button><button type="button" data-format="list">列表</button><button type="button" data-format="link">链接</button><button type="button" id="uploadImages">上传图片</button><button type="button" data-format="image">图片链接</button><button type="button" data-format="code">代码</button></div>
+          <input id="imageFiles" type="file" accept=".jpg,.jpeg,.png,.svg,image/jpeg,image/png,image/svg+xml" multiple hidden>
+          <p id="imageHint" class="field-hint">可拖入图片或粘贴截图。JPG / PNG 最大 8 MB，SVG 最大 1 MB；一次最多 10 张。上传后的图片可通过链接访问。</p>
+          <p id="imageUploadStatus" class="upload-status" role="status" aria-live="polite" hidden></p>
+          <label class="sr-only" for="postMarkdown">正文</label><textarea id="postMarkdown" name="markdown" required maxlength="100000" spellcheck="false" aria-describedby="imageHint" placeholder="在这里写正文…"></textarea>
+        </div>
         <div id="previewPanel" role="tabpanel" aria-labelledby="previewTab" hidden><div id="markdownPreview" class="article-content"></div></div>
       </fieldset>
       <footer class="editor-actions"><span id="wordCount" class="subtle"></span><div><button type="button" id="trashPost" class="danger" hidden>移到回收站</button><button type="button" id="unpublishPost" hidden>撤回为草稿</button><button type="button" id="restorePost" hidden>恢复为草稿</button><button type="submit" id="savePost" class="primary">保存草稿</button><button type="button" id="publishPost" class="primary">发布</button></div></footer>

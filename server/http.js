@@ -19,9 +19,8 @@ export function html(content, status = 200, headers = {}) {
 export function escape(value = '') {
   return String(value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
 }
-export async function readJson(request, maxBytes = 262144) {
-  if (request.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() !== 'application/json') throw new HttpError(415,'请提交 JSON 格式数据');
-  if (Number(request.headers.get('Content-Length')) > maxBytes) throw new HttpError(413,'文章内容过大');
+export async function readBytes(request, maxBytes, tooLarge = '提交内容过大') {
+  if (Number(request.headers.get('Content-Length')) > maxBytes) throw new HttpError(413,tooLarge);
   if (!request.body) throw new HttpError(400,'缺少提交内容');
   const reader = request.body.getReader(), chunks = [];
   let size = 0;
@@ -30,13 +29,18 @@ export async function readJson(request, maxBytes = 262144) {
       const {done,value} = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > maxBytes) { await reader.cancel(); throw new HttpError(413,'文章内容过大'); }
+      if (size > maxBytes) { await reader.cancel(); throw new HttpError(413,tooLarge); }
       chunks.push(value);
     }
   } finally { reader.releaseLock(); }
   const bytes = new Uint8Array(size);
   let offset = 0;
   for (const chunk of chunks) { bytes.set(chunk,offset); offset += chunk.byteLength; }
+  return bytes;
+}
+export async function readJson(request, maxBytes = 262144) {
+  if (request.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() !== 'application/json') throw new HttpError(415,'请提交 JSON 格式数据');
+  const bytes = await readBytes(request,maxBytes,'文章内容过大');
   try {
     const data = JSON.parse(new TextDecoder().decode(bytes));
     if (!data || Array.isArray(data) || typeof data !== 'object') throw new Error();

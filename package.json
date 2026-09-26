@@ -13,6 +13,7 @@
   "packageManager": "pnpm@11.19.0",
   "dependencies": {
     "jose": "6.2.12",
-    "markdown-it": "15.0.2"
+    "markdown-it": "15.0.2",
+    "saxes": "6.0.0"
   }
 }
