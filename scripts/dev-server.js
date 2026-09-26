@@ -4,6 +4,7 @@ import {readFile,stat} from 'node:fs/promises';
 import {resolve,extname,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {localDatabase} from './local-d1.js';
+import {localImages} from './local-images.js';
 import {createHandler} from '../server/app.js';
 
 const root = fileURLToPath(new URL('../',import.meta.url));
@@ -11,7 +12,7 @@ const output = resolve(root,'dist');
 const {sqlite,binding} = localDatabase();
 sqlite.exec(await readFile(resolve(root,'database/comments.sql'),'utf8'));
 const types = {'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.json':'application/json','.xml':'application/xml','.txt':'text/plain','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.moc3':'application/octet-stream'};
-const env = {blog_comments:binding,ASSETS:{async fetch(request) {
+const env = {blog_comments:binding,BLOG_IMAGES:localImages(),ASSETS:{async fetch(request) {
   const path = decodeURIComponent(new URL(request.url).pathname);
   let file = resolve(output,'.'+path);
   if (!file.startsWith(output+sep) || path.split('/').some(part=>part.startsWith('.'))) return new Response('Not found',{status:404});

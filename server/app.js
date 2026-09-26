@@ -4,6 +4,7 @@ import {database,listPosts,categories,getPost,savePost,queryOptions} from './pos
 import {renderHome,renderArchive,renderPost,renderPage,postCards,pagination,renderFeed,renderSitemap} from './render.js';
 import {renderMarkdown} from './markdown.js';
 import {admin} from './generated/templates.js';
+import {uploadImage,serveImage} from './media.js';
 import {onRequest as comments} from '../functions/api/comments.js';
 
 const adminHeaders={'X-Robots-Tag':'noindex, nofollow','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data:; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'"};
@@ -20,6 +21,10 @@ export function createHandler({authenticate=authenticateAdmin}={}) {
         if(!['GET','HEAD'].includes(request.method))requireMutation(request,user);
         if(['/admin','/admin/','/admin.html'].includes(path)&&['GET','HEAD'].includes(request.method))return html(request.method==='HEAD'?'':admin,200,adminHeaders);
         if(path==='/admin/api/session'&&request.method==='GET')return json({ok:true,user:{email:user.email},csrf:user.csrf},200,adminHeaders);
+        if(path==='/admin/api/media') {
+          if(request.method!=='POST')throw new HttpError(405,'方法不允许');
+          return json({ok:true,image:await uploadImage(request,env)},201,adminHeaders);
+        }
         if(path==='/admin/api/preview'&&request.method==='POST') {
           const input=await readJson(request);
           if(typeof input.markdown!=='string'||input.markdown.length>100000)throw new HttpError(400,'正文长度无效');
@@ -48,6 +53,7 @@ export function createHandler({authenticate=authenticateAdmin}={}) {
         throw new HttpError(404,'页面不存在');
       }
       if(!['GET','HEAD'].includes(request.method))throw new HttpError(405,'方法不允许');
+      if(path.startsWith('/media/'))return await serveImage(request,env);
       const canonical={'/index.html':'/','/blog.html':'/blog','/blog/':'/blog'}[path];
       if(canonical)return new Response(null,{status:301,headers:{...securityHeaders,Location:canonical+url.search}});
       if(path==='/posts/post_style.css')return env.ASSETS.fetch(request);
@@ -82,6 +88,7 @@ export function createHandler({authenticate=authenticateAdmin}={}) {
     } catch(error) {
       const status=error instanceof HttpError?error.status:503;
       const message=error instanceof HttpError?error.message:'服务暂时不可用，请稍后重试';
+      if(path.startsWith('/media/'))return new Response(request.method==='HEAD'?null:message,{status,headers:{...securityHeaders,'Content-Type':'text/plain; charset=utf-8'}});
       if(api)return json({ok:false,msg:message},status,isAdmin?adminHeaders:{});
       if(isAdmin)return html(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>博客后台</title><link rel="stylesheet" href="/assets/css/admin.css"><main class="login-notice"><h1>博客后台</h1><p>${escape(message)}</p><a href="/admin">重新登录</a> · <a href="/">返回网站</a></main></html>`,status,adminHeaders);
       return html(renderPage(`<section class="empty-page"><h1>${status===404?'没有找到这篇文章':'暂时无法加载'}</h1><p>${escape(message)}</p><a class="text-link" href="/blog">返回博客列表</a></section>`,{title:'文章 · 小涵 Naiwenel',path}),status,{'X-Robots-Tag':'noindex'});
