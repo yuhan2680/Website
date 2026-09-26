@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>文章管理 · 小涵 Naiwenel</title>
+<link rel="icon" href="/assets/images/avatar-logo.jpg"><link rel="stylesheet" href="/assets/css/admin.css">
+<script src="/assets/js/admin.js" defer></script>
+</head><body>
+<header class="admin-header"><a href="/" class="admin-brand"><img src="/assets/images/avatar-logo.jpg" width="30" height="30" alt="">小涵 <span>内容管理</span></a><div class="account"><span id="accountName"></span><a href="/" target="_blank" rel="noopener">查看网站 ↗</a><a href="/cdn-cgi/access/logout">退出</a></div></header>
+<div id="globalStatus" class="global-status" role="status" aria-live="polite">正在加载…</div>
+<main class="admin-layout">
+  <aside class="post-browser" aria-label="文章管理">
+    <div class="browser-heading"><h1>文章</h1><button type="button" id="newPost" class="primary">＋ 写文章</button></div>
+    <label class="sr-only" for="adminSearch">搜索文章</label><input id="adminSearch" type="search" placeholder="搜索标题或正文" maxlength="100">
+    <label class="sr-only" for="statusFilter">文章状态</label><select id="statusFilter"><option value="all">全部文章</option><option value="draft">草稿</option><option value="published">已发布</option><option value="trash">回收站</option></select>
+    <p id="listCount" class="subtle"></p><div id="adminPostList" class="admin-post-list"></div>
+    <nav class="list-pagination" aria-label="后台文章分页"><button type="button" id="listPrevious">上一页</button><span id="listPage"></span><button type="button" id="listNext">下一页</button></nav>
+    <a class="export-link" href="/admin/api/export">导出文章备份 ↓</a>
+  </aside>
+  <section class="editor-area" aria-label="文章编辑器">
+    <div id="editorEmpty" class="editor-empty"><h2>选择文章，或开始写一篇。</h2></div>
+    <form id="postEditor" hidden>
+      <header class="editor-heading"><div><span id="editingState" class="state-tag">草稿</span><span id="saveState" class="subtle">尚未保存</span></div><a id="publishedLink" href="/blog" target="_blank" rel="noopener" hidden>查看文章 ↗</a></header>
+      <fieldset id="articleFields">
+        <label for="postTitle">标题</label><input id="postTitle" name="title" type="text" maxlength="120" required placeholder="文章标题">
+        <div class="meta-fields"><div><label for="postSlug">文章地址</label><div class="slug-field"><span>/posts/</span><input id="postSlug" name="slug" maxlength="64" pattern="[a-z0-9][a-z0-9_-]{0,63}" required></div></div><div><label for="postCategory">分类</label><input id="postCategory" name="category" list="categoryOptions" maxlength="40" required placeholder="选择或输入分类"><datalist id="categoryOptions"></datalist></div></div>
+        <p id="slugHint" class="field-hint">地址使用小写英文字母、数字、短横线或下划线。发布后保持固定。</p>
+        <label for="postExcerpt">摘要</label><textarea id="postExcerpt" name="excerpt" maxlength="300" rows="2" placeholder="文章列表中显示的简介"></textarea>
+        <div class="editor-tabs" role="tablist" aria-label="正文视图"><button type="button" id="writeTab" role="tab" aria-selected="true" aria-controls="writePanel">编辑</button><button type="button" id="previewTab" role="tab" aria-selected="false" aria-controls="previewPanel">预览</button><span class="subtle">Markdown</span></div>
+        <div id="writePanel" role="tabpanel" aria-labelledby="writeTab"><div class="format-tools" aria-label="插入 Markdown"><button type="button" data-format="heading">标题</button><button type="button" data-format="bold">粗体</button><button type="button" data-format="list">列表</button><button type="button" data-format="link">链接</button><button type="button" data-format="image">图片链接</button><button type="button" data-format="code">代码</button></div><label class="sr-only" for="postMarkdown">正文</label><textarea id="postMarkdown" name="markdown" required maxlength="100000" spellcheck="false" placeholder="在这里写正文…"></textarea></div>
+        <div id="previewPanel" role="tabpanel" aria-labelledby="previewTab" hidden><div id="markdownPreview" class="article-content"></div></div>
+      </fieldset>
+      <footer class="editor-actions"><span id="wordCount" class="subtle"></span><div><button type="button" id="trashPost" class="danger" hidden>移到回收站</button><button type="button" id="unpublishPost" hidden>撤回为草稿</button><button type="button" id="restorePost" hidden>恢复为草稿</button><button type="submit" id="savePost" class="primary">保存草稿</button><button type="button" id="publishPost" class="primary">发布</button></div></footer>
+    </form>
+  </section>
+</main>
+<dialog id="confirmDialog" aria-labelledby="confirmMessage"><form method="dialog"><p id="confirmMessage"></p><div class="confirm-actions"><button value="cancel" autofocus>取消</button><button value="confirm" class="primary">确定</button></div></form></dialog>
+</body></html>
