@@ -151,3 +151,13 @@ body.has-live2d .site-main,body.has-live2d .site-footer { width:min(var(--conten
   .live2d-dock { display:none; }
   body.has-live2d .site-main,body.has-live2d .site-footer { width:min(1180px,calc(100% - 40px)); margin-inline:auto; }
 }
+
+.filter-group a { display:inline-block; padding:7px 12px; color:var(--muted); border:1px solid transparent; font-size:12px; }
+.filter-group a[aria-current="true"] { color:var(--accent); background:var(--tint); border-color:var(--faint); }
+#archiveSearch { margin:0; }
+.search-box button { background:transparent; border:0; padding:5px 10px; color:var(--accent); cursor:pointer; }
+.archive-pagination { display:flex; align-items:center; justify-content:space-between; gap:18px; border-top:1px solid var(--faint); padding:22px 0; font-size:12px; color:var(--muted); }
+.article-content img { max-width:100%; height:auto; }
+.article-content pre { overflow:auto; padding:18px; background:var(--tint); }
+.article-content table { width:100%; border-collapse:collapse; }
+.article-content td,.article-content th { padding:9px; border:1px solid var(--faint); }

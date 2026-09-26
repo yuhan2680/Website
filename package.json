@@ -4,8 +4,15 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.js",
-    "test": "node --test tests/*.test.js",
-    "dev": "node scripts/dev-server.js"
+    "test": "node scripts/build.js && node --test tests/*.test.js",
+    "dev": "node scripts/build.js && node scripts/dev-server.js"
   },
-  "engines": { "node": ">=22.13" }
+  "engines": {
+    "node": ">=22.13"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "dependencies": {
+    "jose": "6.2.12",
+    "markdown-it": "15.0.2"
+  }
 }
