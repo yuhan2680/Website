@@ -1,6 +1,7 @@
 import { mkdir, copyFile, cp, lstat, rm, readFile, writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = resolve(root, 'dist');
 // Clean only the fixed deployment directory, never a linked directory.
@@ -22,7 +23,17 @@ const home=homeSource.replace(/<div class="post-list">[\s\S]*?<\/div><\/section>
 const page=pageSource.replace(/<main\b[^>]*>[\s\S]*?<\/main>/,'<main id="main" tabindex="-1" class="site-main">__BLOG_MAIN__</main>');
 const commentForm=postSource.match(/<section class="comment-container[\s\S]*?<\/section>/)?.[0];
 if (!home.includes('__BLOG_POSTS__') || !page.includes('__BLOG_MAIN__') || !commentForm) throw new Error('Blog layout markers are missing');
-const admin=await readFile(resolve(root,'template/admin.html'),'utf8');
+let admin=await readFile(resolve(root,'template/admin.html'),'utf8');
+// Keep the protected HTML and its assets in sync even when browsers cache an
+// earlier admin.js or admin.css for several hours.
+for (const [directory,extension] of [['js','js'],['css','css']]) {
+  const source=`assets/${directory}/admin.${extension}`;
+  const content=await readFile(resolve(root,source));
+  const hash=createHash('sha256').update(content).digest('hex').slice(0,12);
+  const versioned=`assets/${directory}/admin.${hash}.${extension}`;
+  await writeFile(resolve(output,versioned),content);
+  admin=admin.replaceAll('/'+source,'/'+versioned);
+}
 const schema=(await readFile(resolve(root,'database/blog.sql'),'utf8')).split(';').map(sql=>sql.trim()).filter(Boolean);
 await mkdir(resolve(root,'server/generated'),{recursive:true});
 await writeFile(resolve(root,'server/generated/templates.js'),Object.entries({home,page,commentForm,admin,schema}).map(([name,value])=>`export const ${name} = ${JSON.stringify(value)};`).join('\n')+'\n');

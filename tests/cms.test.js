@@ -42,6 +42,20 @@ test('migration imports legacy articles once and preserves home layout, comments
   for(const path of ['dist/posts/post3.html','dist/template/admin.html','dist/server/app.js'])await assert.rejects(access(new URL('../'+path,import.meta.url)));
 });
 
+test('served admin HTML loads current, versioned assets present in the deployment',async t=>{
+  const f=await fixture(t);
+  const response=await f.call('/admin');assert.equal(response.status,200);
+  const html=await response.text();
+  for(const [directory,extension] of [['js','js'],['css','css']]) {
+    const path=html.match(new RegExp(`/assets/${directory}/admin\\.[a-f0-9]{12}\\.${extension}`))?.[0];
+    assert.ok(path,`admin ${extension} URL must change when its content changes`);
+    const deployed=await readFile(new URL('../dist'+path,import.meta.url));
+    const current=await readFile(new URL(`../assets/${directory}/admin.${extension}`,import.meta.url));
+    assert.deepEqual(deployed,current,`deployed ${extension} must match the current editor`);
+    assert.ok(!html.includes(`"/assets/${directory}/admin.${extension}"`),'must not reuse the stale browser cache URL');
+  }
+});
+
 test('draft, publish, withdrawal, trash and restore control every public surface',async t=>{
   const f=await fixture(t);let post=await f.save(article);
   assert.equal((await f.call('/posts/'+post.slug)).status,404);
