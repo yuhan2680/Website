@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>友情链接管理 · 小涵 Naiwenel</title>
+<link rel="icon" href="/assets/images/avatar-logo.jpg"><link rel="stylesheet" href="/assets/css/admin.css">
+<script src="/assets/js/admin-friendlinks.js" defer></script>
+</head><body>
+<header class="admin-header">
+  <a href="/" class="admin-brand"><img src="/assets/images/avatar-logo.jpg" width="30" height="30" alt="">小涵 <span>内容管理</span></a>
+  <nav class="admin-nav" aria-label="后台导航"><a href="/admin">文章</a><a href="/admin/friendlinks" aria-current="page">友情链接</a></nav>
+  <div class="account"><span id="accountName"></span><a href="/friendlinks" target="_blank" rel="noopener">查看友链 ↗</a><a href="/cdn-cgi/access/logout">退出</a></div>
+</header>
+<div id="globalStatus" class="global-status" role="status" aria-live="polite">正在加载…</div>
+<main class="admin-layout">
+  <aside class="post-browser" aria-label="友情链接管理">
+    <div class="browser-heading"><h1>友情链接</h1><button type="button" id="newFriend" class="primary" disabled>＋ 添加友链</button></div>
+    <label class="sr-only" for="friendSearch">搜索友链</label><input id="friendSearch" type="search" placeholder="搜索名称、网址或简介" maxlength="100">
+    <label class="sr-only" for="friendFilter">友链状态</label><select id="friendFilter"><option value="active">正在显示</option><option value="trash">回收站</option></select>
+    <p id="friendCount" class="subtle"></p><div id="friendList" class="admin-post-list"></div>
+    <a class="export-link" href="/admin/api/friendlinks/export">导出友链备份 ↓</a>
+  </aside>
+  <section class="editor-area" aria-label="友链编辑器">
+    <div id="friendEmpty" class="editor-empty"><h2>选择友链，或添加一个网站。</h2></div>
+    <form id="friendEditor" hidden>
+      <header class="editor-heading"><div><span id="friendState" class="state-tag"></span><span id="friendSaveState" class="subtle"></span></div></header>
+      <fieldset id="friendFields">
+        <label for="friendName">网站名称</label><input id="friendName" name="name" maxlength="80" required placeholder="网站名称">
+        <label for="friendUrl">网站地址</label><input id="friendUrl" name="url" type="url" maxlength="2048" required placeholder="https://example.com" spellcheck="false">
+        <label for="friendAvatar">头像地址</label>
+        <div class="friend-avatar-controls">
+          <img id="avatarPreview" src="/assets/images/avatar-logo.jpg" width="56" height="56" alt="头像预览" referrerpolicy="no-referrer">
+          <input id="friendAvatar" name="avatar" maxlength="2048" placeholder="图片网址，也可以直接上传" spellcheck="false" aria-describedby="avatarHint">
+          <button type="button" id="uploadAvatar">上传头像</button>
+        </div>
+        <input id="avatarFile" type="file" accept=".jpg,.jpeg,.png,.svg,image/jpeg,image/png,image/svg+xml" hidden>
+        <p id="avatarHint" class="field-hint">头像可留空。JPG / PNG 最大 8 MB，SVG 最大 1 MB；上传后的图片可通过链接访问。</p>
+        <p id="avatarStatus" class="upload-status" role="status" aria-live="polite" hidden></p>
+        <label for="friendDescription">简介</label><textarea id="friendDescription" name="description" maxlength="300" rows="3" placeholder="网站简介"></textarea>
+        <label for="friendOrder">排序</label><input id="friendOrder" class="order-input" name="sort_order" type="number" min="0" max="9999" step="1" required aria-describedby="orderHint">
+        <p id="orderHint" class="field-hint">数字越小越靠前，相同数字按添加时间排列。</p>
+      </fieldset>
+      <footer class="editor-actions"><span class="subtle">保存后更新友情链接页面。</span><div>
+        <button type="button" id="trashFriend" class="danger" hidden>移到回收站</button>
+        <button type="button" id="restoreFriend" hidden>恢复显示</button>
+        <button type="submit" id="saveFriend" class="primary">保存友链</button>
+      </div></footer>
+    </form>
+  </section>
+</main>
+<dialog id="confirmDialog" aria-labelledby="confirmMessage"><form method="dialog"><p id="confirmMessage"></p><div class="confirm-actions"><button value="cancel" autofocus>取消</button><button value="confirm" class="primary">确定</button></div></form></dialog>
+</body></html>
