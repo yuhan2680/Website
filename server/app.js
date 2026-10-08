@@ -1,9 +1,10 @@
 import {authenticateAdmin,requireMutation} from './auth.js';
 import {HttpError,json,html,readJson,escape,securityHeaders} from './http.js';
 import {database,listPosts,categories,getPost,savePost,queryOptions} from './posts.js';
-import {renderHome,renderArchive,renderPost,renderPage,postCards,pagination,renderFeed,renderSitemap} from './render.js';
+import {renderHome,renderArchive,renderPost,renderPage,postCards,pagination,renderFeed,renderSitemap,renderFriendlinks} from './render.js';
 import {renderMarkdown} from './markdown.js';
-import {admin} from './generated/templates.js';
+import {admin,friendAdmin} from './generated/templates.js';
+import {friendDatabase,listFriendlinks,getFriendlink,saveFriendlink} from './friendlinks.js';
 import {uploadImage,serveImage} from './media.js';
 import {onRequest as comments} from '../functions/api/comments.js';
 
@@ -20,6 +21,7 @@ export function createHandler({authenticate=authenticateAdmin}={}) {
         const user=await authenticate(request,env);
         if(!['GET','HEAD'].includes(request.method))requireMutation(request,user);
         if(['/admin','/admin/','/admin.html'].includes(path)&&['GET','HEAD'].includes(request.method))return html(request.method==='HEAD'?'':admin,200,adminHeaders);
+        if(['/admin/friendlinks','/admin/friendlinks/'].includes(path)&&['GET','HEAD'].includes(request.method))return html(request.method==='HEAD'?'':friendAdmin,200,adminHeaders);
         if(path==='/admin/api/session'&&request.method==='GET')return json({ok:true,user:{email:user.email},csrf:user.csrf},200,adminHeaders);
         if(path==='/admin/api/media') {
           if(request.method!=='POST')throw new HttpError(405,'方法不允许');
@@ -29,6 +31,24 @@ export function createHandler({authenticate=authenticateAdmin}={}) {
           const input=await readJson(request);
           if(typeof input.markdown!=='string'||input.markdown.length>100000)throw new HttpError(400,'正文长度无效');
           return json({ok:true,html:renderMarkdown(input.markdown)},200,adminHeaders);
+        }
+        if(path==='/admin/api/friendlinks'||path.startsWith('/admin/api/friendlinks/')) {
+          const db=await friendDatabase(env);
+          if(path==='/admin/api/friendlinks/export'&&request.method==='GET')return json({version:1,exported_at:new Date().toISOString(),friendlinks:await listFriendlinks(db,{status:'all'})},200,{...adminHeaders,'Content-Disposition':'attachment; filename="friendlinks.json"'});
+          if(path==='/admin/api/friendlinks') {
+            if(request.method==='GET')return json({ok:true,items:await listFriendlinks(db,{status:url.searchParams.get('status')||'active',q:url.searchParams.get('q')||''})},200,adminHeaders);
+            if(request.method==='POST')return json({ok:true,friendlink:await saveFriendlink(db,await readJson(request,16384))},201,adminHeaders);
+            throw new HttpError(405,'方法不允许');
+          }
+          const match=path.match(/^\/admin\/api\/friendlinks\/([a-zA-Z0-9_-]{1,64})$/);
+          if(!match)throw new HttpError(404,'页面不存在');
+          if(request.method==='GET') {
+            const friendlink=await getFriendlink(db,match[1]);
+            if(!friendlink)throw new HttpError(404,'友情链接不存在');
+            return json({ok:true,friendlink},200,adminHeaders);
+          }
+          if(request.method==='PUT')return json({ok:true,friendlink:await saveFriendlink(db,await readJson(request,16384),match[1])},200,adminHeaders);
+          throw new HttpError(405,'方法不允许');
         }
         const db=await database(env);
         if(path==='/admin/api/export'&&request.method==='GET') {
@@ -54,14 +74,15 @@ export function createHandler({authenticate=authenticateAdmin}={}) {
       }
       if(!['GET','HEAD'].includes(request.method))throw new HttpError(405,'方法不允许');
       if(path.startsWith('/media/'))return await serveImage(request,env);
-      const canonical={'/index.html':'/','/blog.html':'/blog','/blog/':'/blog'}[path];
+      const canonical={'/index.html':'/','/blog.html':'/blog','/blog/':'/blog','/friendlinks.html':'/friendlinks','/friendlinks/':'/friendlinks'}[path];
       if(canonical)return new Response(null,{status:301,headers:{...securityHeaders,Location:canonical+url.search}});
       if(path==='/posts/post_style.css')return env.ASSETS.fetch(request);
-      const dynamic=path==='/'||path==='/blog'||path==='/api/posts'||path.startsWith('/posts/')||path==='/rss.xml'||path==='/sitemap.xml';
+      const dynamic=path==='/'||path==='/blog'||path==='/friendlinks'||path==='/api/posts'||path.startsWith('/posts/')||path==='/rss.xml'||path==='/sitemap.xml';
       if(!dynamic)return env.ASSETS.fetch(request);
       const db=await database(env);
       let response;
       if(path==='/')response=html(renderHome((await listPosts(db,{limit:3})).items));
+      else if(path==='/friendlinks')response=html(renderFriendlinks(await listFriendlinks(await friendDatabase(env))));
       else if(path==='/blog'||path==='/api/posts') {
         const options=queryOptions(url), result=await listPosts(db,options);
         if(path==='/api/posts')response=json({...result,html:postCards(result.items),pagination:pagination(result,options)});
@@ -91,6 +112,7 @@ export function createHandler({authenticate=authenticateAdmin}={}) {
       if(path.startsWith('/media/'))return new Response(request.method==='HEAD'?null:message,{status,headers:{...securityHeaders,'Content-Type':'text/plain; charset=utf-8'}});
       if(api)return json({ok:false,msg:message},status,isAdmin?adminHeaders:{});
       if(isAdmin)return html(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>博客后台</title><link rel="stylesheet" href="/assets/css/admin.css"><main class="login-notice"><h1>博客后台</h1><p>${escape(message)}</p><a href="/admin">重新登录</a> · <a href="/">返回网站</a></main></html>`,status,adminHeaders);
+      if(path==='/friendlinks')return html(renderFriendlinks([],'友情链接暂时无法加载，请稍后重试。'),status,{'X-Robots-Tag':'noindex'});
       return html(renderPage(`<section class="empty-page"><h1>${status===404?'没有找到这篇文章':'暂时无法加载'}</h1><p>${escape(message)}</p><a class="text-link" href="/blog">返回博客列表</a></section>`,{title:'文章 · 小涵 Naiwenel',path}),status,{'X-Robots-Tag':'noindex'});
     }
   };

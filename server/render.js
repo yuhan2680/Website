@@ -1,4 +1,4 @@
-import {home,page,commentForm} from './generated/templates.js';
+import {home,page,commentForm,friends} from './generated/templates.js';
 import {escape} from './http.js';
 import {renderMarkdown} from './markdown.js';
 
@@ -8,6 +8,11 @@ export function postCards(items) {
   return items.map(post=>`<article class="post-card" data-post-card data-category="${escape(post.category)}"><div class="post-meta"><span class="tag">${escape(post.category)}</span><time datetime="${escape(post.published_at?.slice(0,10))}">${dateLabel(post.published_at)}</time></div><h3><a href="/posts/${escape(post.slug)}">${escape(post.title)}</a></h3><p>${escape(post.excerpt)}</p><a class="text-link" href="/posts/${escape(post.slug)}">继续阅读 <span aria-hidden="true">↗</span></a></article>`).join('') || '<p class="muted">暂时没有文章。</p>';
 }
 export function renderHome(posts) { return home.replace('__BLOG_POSTS__',()=>postCards(posts)); }
+
+export function renderFriendlinks(items,message='暂时没有友情链接。') {
+  const cards=items.map(link=>`<a class="friend-card panel" href="${escape(link.url)}" target="_blank" rel="noopener noreferrer"><img src="${escape(link.avatar||'/assets/images/avatar-logo.jpg')}" width="56" height="56" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${escape(link.name)} 的头像"><div><h2>${escape(link.name)}</h2><p>${escape(link.description)}</p></div><span aria-hidden="true">↗</span></a>`).join('\n');
+  return friends.replace('__FRIEND_LINKS__',()=>cards||`<p class="muted">${escape(message)}</p>`);
+}
 
 export function renderPage(main,{title='博客列表 · 小涵 Naiwenel',description='小涵的博客文章。',path='/blog',type='website',postId,archive=false}={}) {
   let result=page.replace('__BLOG_MAIN__',()=>main).replace(/<title>[\s\S]*?<\/title>/,()=>`<title>${escape(title)}</title>`);

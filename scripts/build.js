@@ -9,7 +9,7 @@ if (dirname(output) !== resolve(root) || (await lstat(output).catch(() => null))
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 // Only explicit public assets enter the deployment; no tests, templates or local data.
-for (const name of ['index.html','blog.html','about.html','friendlinks.html','donate.html','404.html','rss.xml','sitemap.xml','robots.txt','_headers','_redirects','_routes.json']) await copyFile(resolve(root,name), resolve(output,name));
+for (const name of ['index.html','blog.html','about.html','donate.html','404.html','rss.xml','sitemap.xml','robots.txt','_headers','_redirects','_routes.json']) await copyFile(resolve(root,name), resolve(output,name));
 for (const name of ['assets','live2d']) await cp(resolve(root,name),resolve(output,name),{recursive:true});
 await mkdir(resolve(output,'posts'),{recursive:true});
 await copyFile(resolve(root,'posts/post_style.css'),resolve(output,'posts/post_style.css'));
@@ -24,17 +24,22 @@ const page=pageSource.replace(/<main\b[^>]*>[\s\S]*?<\/main>/,'<main id="main" t
 const commentForm=postSource.match(/<section class="comment-container[\s\S]*?<\/section>/)?.[0];
 if (!home.includes('__BLOG_POSTS__') || !page.includes('__BLOG_MAIN__') || !commentForm) throw new Error('Blog layout markers are missing');
 let admin=await readFile(resolve(root,'template/admin.html'),'utf8');
+let friendAdmin=await readFile(resolve(root,'template/admin-friendlinks.html'),'utf8');
+const friends=await readFile(resolve(root,'friendlinks.html'),'utf8');
+if(!friends.includes('__FRIEND_LINKS__'))throw new Error('Friend links layout marker is missing');
 // Keep the protected HTML and its assets in sync even when browsers cache an
 // earlier admin.js or admin.css for several hours.
-for (const [directory,extension] of [['js','js'],['css','css']]) {
-  const source=`assets/${directory}/admin.${extension}`;
+for (const [directory,name,extension] of [['js','admin','js'],['js','admin-friendlinks','js'],['css','admin','css']]) {
+  const source=`assets/${directory}/${name}.${extension}`;
   const content=await readFile(resolve(root,source));
   const hash=createHash('sha256').update(content).digest('hex').slice(0,12);
-  const versioned=`assets/${directory}/admin.${hash}.${extension}`;
+  const versioned=`assets/${directory}/${name}.${hash}.${extension}`;
   await writeFile(resolve(output,versioned),content);
   admin=admin.replaceAll('/'+source,'/'+versioned);
+  friendAdmin=friendAdmin.replaceAll('/'+source,'/'+versioned);
 }
 const schema=(await readFile(resolve(root,'database/blog.sql'),'utf8')).split(';').map(sql=>sql.trim()).filter(Boolean);
+const friendSchema=(await readFile(resolve(root,'database/friendlinks.sql'),'utf8')).split(';').map(sql=>sql.trim()).filter(Boolean);
 await mkdir(resolve(root,'server/generated'),{recursive:true});
-await writeFile(resolve(root,'server/generated/templates.js'),Object.entries({home,page,commentForm,admin,schema}).map(([name,value])=>`export const ${name} = ${JSON.stringify(value)};`).join('\n')+'\n');
+await writeFile(resolve(root,'server/generated/templates.js'),Object.entries({home,page,commentForm,admin,schema,friends,friendAdmin,friendSchema}).map(([name,value])=>`export const ${name} = ${JSON.stringify(value)};`).join('\n')+'\n');
 console.log('Built public website in dist/');
