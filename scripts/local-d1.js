@@ -10,14 +10,20 @@ export function localDatabase() {
       async run() { return {meta:{changes:Number(sqlite.prepare(sql).run(...args).changes)}}; }
     };
   }
-  const binding = {prepare, async batch(statements) {
-    sqlite.exec('BEGIN');
-    try {
-      const result = [];
-      for (const statement of statements) result.push(await statement.run());
-      sqlite.exec('COMMIT');
-      return result;
-    } catch (error) { sqlite.exec('ROLLBACK'); throw error; }
+  let pending = Promise.resolve();
+  const binding = {prepare, batch(statements) {
+    // D1 batches are serial transactions, including across concurrent requests.
+    const task = pending.then(async () => {
+      sqlite.exec('BEGIN');
+      try {
+        const result = [];
+        for (const statement of statements) result.push(await statement.run());
+        sqlite.exec('COMMIT');
+        return result;
+      } catch (error) { sqlite.exec('ROLLBACK'); throw error; }
+    });
+    pending = task.catch(() => {});
+    return task;
   }};
   return {sqlite,binding};
 }

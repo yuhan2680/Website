@@ -1,14 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DatabaseSync } from 'node:sqlite';
+import { localDatabase } from '../scripts/local-d1.js';
 import { onRequest } from '../functions/api/comments.js';
 
 function fixture() {
-  const db = new DatabaseSync(':memory:');
+  const {sqlite:db,binding} = localDatabase();
   db.exec('CREATE TABLE comments (id INTEGER PRIMARY KEY AUTOINCREMENT, post_id TEXT NOT NULL, nickname TEXT NOT NULL, content TEXT NOT NULL, created_at TEXT NOT NULL)');
-  const env = { blog_comments: { prepare(sql) { return { bind(...args) { const stmt=db.prepare(sql); return {
-    async all() { return {results:stmt.all(...args)}; }, async run() { return {meta:{changes:Number(stmt.run(...args).changes)}}; }
-  }; } }; } } };
+  const env = { blog_comments: binding };
   const get = (query='post=index') => onRequest({request:new Request('https://naiwenel.com/api/comments?'+query),env});
   const post = (body, headers={}, query='post=index') => onRequest({ request:new Request('https://naiwenel.com/api/comments?'+query,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:typeof body === 'string' ? body : JSON.stringify(body)}),env });
   return {db,env,get,post};
@@ -39,13 +37,15 @@ test('rejects cross-origin writes, wrong content type and honeypot', async () =>
 });
 test('deduplicates repeated inserts atomically without changing existing schema', async () => {
   const f=fixture(), data={nickname:'visitor',content:'hello'};
-  const responses=await Promise.all([f.post(data),f.post(data)]);
+  const responses=await Promise.all([f.post(data,{'CF-Connecting-IP':'192.0.2.1'}),f.post(data,{'CF-Connecting-IP':'192.0.2.2'})]);
   assert.deepEqual(responses.map(r=>r.status).sort(),[201,429]); assert.equal((await (await f.get()).json()).length,1);
   assert.equal(responses.find(r=>r.status===429).headers.get('Retry-After'),'60'); f.db.close();
 });
 test('paginates newest first, isolates posts, and has no overlaps when new comments arrive', async () => {
-  const f=fixture(); for(let i=0;i<25;i++) await f.post({nickname:'v',content:'comment '+i});
-  await f.post({nickname:'v',content:'other'}, {}, 'post=post3');
+  const f=fixture();
+  const seed=f.db.prepare('INSERT INTO comments (post_id,nickname,content,created_at) VALUES (?, ?, ?, ?)');
+  for(let i=0;i<25;i++) seed.run('index','v','comment '+i,new Date().toISOString());
+  seed.run('post3','v','other',new Date().toISOString());
   const first=await f.get(), cursor=first.headers.get('X-Comments-Next-Cursor'), rows=await first.json();
   assert.equal(rows.length,20); assert.equal(rows[0].content,'comment 24');
   await f.post({nickname:'v',content:'new'});
