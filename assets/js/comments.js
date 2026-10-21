@@ -14,7 +14,11 @@
       const response = await fetch(url, { ...options, signal: controller.signal });
       let data;
       try { data = await response.json(); } catch { throw new Error("留言服务暂时不可用，请稍后重试。"); }
-      if (!response.ok) throw new Error(data.msg || "请求失败，请稍后重试。");
+      if (!response.ok) {
+        const error = new Error(data.msg || "请求失败，请稍后重试。");
+        if (response.status === 429) error.retryAfter = Math.min(86400, Math.max(1, Number(response.headers.get('Retry-After')) || 10));
+        throw error;
+      }
       return { response, data };
     } catch (error) {
       if (error.name === "AbortError") throw new Error("连接超时，请检查网络后重试。");
@@ -62,10 +66,13 @@
       const { data } = await request(endpoint, { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nickname: nickname.value.trim(), content: content.value.trim(), website: form.elements.website.value }) });
       if (!data.ok) throw new Error(data.msg || "提交失败，请重试。");
-      content.value = ""; nextSubmit = Date.now() + 3000;
+      content.value = ""; nextSubmit = Date.now() + 10000;
       try { localStorage.setItem("naiwenel-nickname", nickname.value.trim()); } catch { /* optional */ }
       status.textContent = "留言已发布，谢谢你的分享！"; await load();
-    } catch (error) { status.textContent = error instanceof TypeError ? "网络连接失败，评论已保留，可稍后重试。" : error.message; }
+    } catch (error) {
+      if (error.retryAfter) nextSubmit = Date.now() + error.retryAfter * 1000;
+      status.textContent = error instanceof TypeError ? "网络连接失败，评论已保留，可稍后重试。" : error.message;
+    }
     finally { sending = false; submit.disabled = false; submit.textContent = "提交评论"; }
   });
   load();

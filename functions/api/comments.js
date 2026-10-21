@@ -1,3 +1,5 @@
+import {insertComment} from '../../server/comment-limits.js';
+
 const MAX_BODY_BYTES = 8192;
 
 function json(data, status = 200, headers = {}) {
@@ -74,12 +76,9 @@ export async function onRequest({ request, env }) {
   }
   if (data.website) return json({ ok: false, msg: "提交未通过验证" }, 400);
   try {
-    const createdAt = new Date().toISOString(), cutoff = new Date(Date.now() - 60000).toISOString();
-    // Atomic deduplication works with the existing schema. It is not an IP rate limiter.
-    const result = await env.blog_comments.prepare(
-      "INSERT INTO comments (post_id, nickname, content, created_at) SELECT ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM comments WHERE post_id = ? AND nickname = ? AND content = ? AND created_at > ?)"
-    ).bind(postId, nickname, content, createdAt, postId, nickname, content, cutoff).run();
-    if (!result.meta?.changes) return json({ ok: false, msg: "刚刚已提交过这条评论，请勿重复发送" }, 429, { "Retry-After": "60" });
+    const result = await insertComment(env.blog_comments, request, {postId, nickname, content});
+    if (result.status !== 'created') return json({ ok: false, msg: result.status === 'duplicate'
+      ? "刚刚已提交过这条评论，请勿重复发送" : "留言提交较频繁，请稍后再试" }, 429, { "Retry-After": String(result.retryAfter) });
     return json({ ok: true, msg: "评论提交成功" }, 201);
   } catch { return json({ ok: false, msg: "评论提交失败，请稍后再试" }, 503); }
 }
