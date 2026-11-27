@@ -1,0 +1,16 @@
+[
+  {
+    "name": "逆性莫比乌斯",
+    "description": "新作已发布，欢迎来体验。",
+    "platform": "STEAM",
+    "cover": "/assets/images/inverse-mobius.jpg",
+    "url": "https://store.steampowered.com/app/4591540/_/"
+  },
+  {
+    "name": "Level C-1366",
+    "description": "我的第一个 Steam 游戏 Demo。",
+    "platform": "STEAM",
+    "cover": "/assets/images/level-c1366.jpg",
+    "url": "https://store.steampowered.com/app/4170570/Level_C1366/"
+  }
+]

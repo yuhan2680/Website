@@ -1,17 +1,49 @@
-import {home,page,commentForm,friends} from './generated/templates.js';
+import {home,page,commentForm,friends,about,donations} from './generated/templates.js';
 import {escape} from './http.js';
 import {renderMarkdown} from './markdown.js';
 
 const origin='https://naiwenel.com';
 const dateLabel=value=>String(value || '').slice(0,10).replaceAll('-','.');
-export function postCards(items) {
-  return items.map(post=>`<article class="post-card" data-post-card data-category="${escape(post.category)}"><div class="post-meta"><span class="tag">${escape(post.category)}</span><time datetime="${escape(post.published_at?.slice(0,10))}">${dateLabel(post.published_at)}</time></div><h3><a href="/posts/${escape(post.slug)}">${escape(post.title)}</a></h3><p>${escape(post.excerpt)}</p><a class="text-link" href="/posts/${escape(post.slug)}">继续阅读 <span aria-hidden="true">↗</span></a></article>`).join('') || '<p class="muted">暂时没有文章。</p>';
+export function postCards(items,readLabel='继续阅读') {
+  return items.map(post=>`<article class="post-card" data-post-card data-category="${escape(post.category)}"><div class="post-meta"><span class="tag">${escape(post.category)}</span><time datetime="${escape(post.published_at?.slice(0,10))}">${dateLabel(post.published_at)}</time></div><h3><a href="/posts/${escape(post.slug)}">${escape(post.title)}</a></h3><p>${escape(post.excerpt)}</p><a class="text-link" href="/posts/${escape(post.slug)}">${escape(readLabel)} <span aria-hidden="true">↗</span></a></article>`).join('') || '<p class="muted">暂时没有文章。</p>';
 }
-export function renderHome(posts) { return home.replace('__BLOG_POSTS__',()=>postCards(posts)); }
+function projectCards(items) {
+  return items.map(({name,description,platform,url,cover},index)=>{
+    const platformLabel=platform?`<span class="project-platform">${escape(platform)} ↗</span>`:'';
+    return `<a class="project-card${index%2?' project-blue':''}" href="${escape(url)}" target="_blank" rel="noopener noreferrer"><div class="project-art"><img src="${escape(cover)}" width="460" height="215" alt="${escape(name)}封面" loading="lazy" decoding="async" referrerpolicy="no-referrer">${platformLabel}</div><div class="project-copy"><h3>${escape(name)}</h3><p>${escape(description)}</p></div></a>`;
+  }).join('') || '<p class="muted">暂时没有作品。</p>';
+}
+export function renderHome(posts,profile,projects) {
+  const tags=profile.tags.map(tag=>`<span>${escape(tag)}</span>`).join('');
+  const dotClasses=['',' violet',' blue'];
+  const learning=profile.learning.map((item,i)=>`<li><span aria-hidden="true" class="status-dot${dotClasses[i%3]}"></span> ${escape(item)}</li>`).join('');
+  const cards=`<section class="profile-card panel"><img src="${escape(profile.avatar)}" width="76" height="76" alt="${escape(profile.name)}的头像" decoding="async" referrerpolicy="no-referrer"><h2>${escape(profile.name)}</h2><p>${escape(profile.bio)}</p><div class="profile-tags">${tags}</div><a class="text-link" href="/about">关于我 ↗</a></section><section class="side-note panel"><h3>${escape(profile.learningTitle)}</h3><ul>${learning}</ul></section>`;
+  const sections={__HOME_PROFILE__:cards,__BLOG_POSTS__:postCards(posts,'点此阅读'),__PROJECT_ITEMS__:projectCards(projects)};
+  return home.replace(/__HOME_PROFILE__|__BLOG_POSTS__|__PROJECT_ITEMS__/g,slot=>sections[slot]);
+}
 
-export function renderFriendlinks(items,message='暂时没有友情链接。') {
+export function renderAbout(profile) {
+  const title=escape(profile.aboutTitle);
+  const content=`<header class="page-intro"><h1>${title}</h1></header><section class="about-layout panel"><div class="about-photo"><img src="${escape(profile.aboutAvatar)}" width="200" height="200" decoding="async" referrerpolicy="no-referrer" alt="${escape(profile.name)}的头像"></div><div class="article-content">${renderMarkdown(profile.aboutMarkdown)}</div></section>`;
+  return about.replace(/<title>[^<]*<\/title>|(<meta (?:name="description"|property="og:(?:description|title)") content=")[^"]*">|__ABOUT_PROFILE__/g,(slot,meta)=>{
+    if (slot==='__ABOUT_PROFILE__') return content;
+    const pageTitle=title+' · '+escape(profile.name);
+    if (!meta) return '<title>'+pageTitle+'</title>';
+    return meta+(meta.includes('og:title')?pageTitle:escape(profile.bio))+'">';
+  });
+}
+
+export function renderDonations(items) {
+  const links=items.map(({name,url})=>`<li><h3><a class="post-title" href="${escape(url)}">${escape(name)}</a></h3></li>`).join('\n');
+  return donations.replace('__DONATION_ITEMS__',()=>links||'<li class="muted">暂时没有赞助链接。</li>');
+}
+
+export function renderFriendlinks(items,message='暂时没有友情链接。',avatar='/assets/images/avatar-logo.jpg',mediaOrigin=origin) {
   const cards=items.map(link=>`<a class="friend-card panel" href="${escape(link.url)}" target="_blank" rel="noopener noreferrer"><img src="${escape(link.avatar||'/assets/images/avatar-logo.jpg')}" width="56" height="56" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${escape(link.name)} 的头像"><div><h2>${escape(link.name)}</h2><p>${escape(link.description)}</p></div><span aria-hidden="true">↗</span></a>`).join('\n');
-  return friends.replace('__FRIEND_LINKS__',()=>cards||`<p class="muted">${escape(message)}</p>`);
+  const avatarUrl=escape(new URL(avatar,avatar.startsWith('/media/')?mediaOrigin:origin).href);
+  return friends.replace(/__FRIEND_LINKS__|__EXCHANGE_AVATAR__/g,slot=>slot==='__EXCHANGE_AVATAR__'
+    ?`<a href="${avatarUrl}">${avatarUrl}</a>`
+    :cards||`<p class="muted">${escape(message)}</p>`);
 }
 
 export function renderPage(main,{title='博客列表 · 小涵 Naiwenel',description='小涵的博客文章。',path='/blog',type='website',postId,archive=false}={}) {
@@ -37,7 +69,7 @@ export function pagination(result,options) {
 }
 export function renderArchive(result,options,categories) {
   const filters=[{category:'',name:'全部'},...categories.map(item=>({category:item.category,name:item.category}))].map(item=>`<a data-archive-link href="${escape(archiveUrl(options,{category:item.category,page:1}))}" ${options.category===item.category?'aria-current="true"':''}>${escape(item.name)}</a>`).join('');
-  return renderPage(`<header class="page-intro"><h1>博客列表</h1><p>这里记录了小涵的想法、日志与创作旅程。</p></header><section id="articleArchive" aria-label="文章归档"><div class="archive-tools"><nav class="filter-group" aria-label="文章分类">${filters}</nav><form id="archiveSearch" action="/blog" method="get" role="search"><input type="hidden" name="category" value="${escape(options.category)}"><label class="search-box"><span class="sr-only">搜索文章</span><input id="articleSearch" name="q" type="search" maxlength="100" value="${escape(options.q)}" placeholder="搜索文章" autocomplete="off"><button type="submit" aria-label="搜索">⌕</button></label></form></div><p id="archiveStatus" role="status" class="muted small">共 ${result.total} 篇文章</p><div class="archive-list">${postCards(result.items)}</div><div id="archivePager">${pagination(result,options)}</div></section>`,{archive:true});
+  return renderPage(`<header class="page-intro"><h1>博客列表</h1><p>这里记录了小涵的想法、日志与创作旅程。</p></header><section id="articleArchive" aria-label="文章归档"><div class="archive-tools"><nav class="filter-group" aria-label="文章分类">${filters}</nav><form class="search-box" id="archiveSearch" action="/blog" method="get" role="search"><input type="hidden" name="category" value="${escape(options.category)}"><label class="sr-only" for="articleSearch">搜索文章</label><input id="articleSearch" name="q" type="search" maxlength="100" value="${escape(options.q)}" placeholder="搜索文章" autocomplete="off"><button type="submit" aria-label="搜索"><span class="search-icon" aria-hidden="true"></span></button></form></div><p id="archiveStatus" role="status" class="muted small">共 ${result.total} 篇文章</p><div class="archive-list">${postCards(result.items)}</div><div id="archivePager">${pagination(result,options)}</div></section>`,{archive:true});
 }
 export function renderPost(post,neighbors=[]) {
   const minutes=Math.max(1,Math.ceil(post.markdown.length/400));
