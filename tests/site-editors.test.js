@@ -56,7 +56,13 @@ test('saved owner settings appear on their public pages and keep existing routes
   assert.match(about,/<h1>个人简介<\/h1>/);
   assert.match(about,/<strong>作者近况<\/strong>/);
   const donations=await page('/donate');
-  assert.match(donations,/href="https:\/\/example.org\/support">支持开源/);
+  const navigation=donations.match(/<nav class="menu-container"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+  assert.ok(navigation?.includes('href="/donate" aria-current="page"'));
+  assert.ok(!navigation.includes('class="post-title"'));
+  const main=donations.match(/<main\b[^>]*>([\s\S]*?)<\/main>/)?.[1];
+  assert.ok(main?.includes('<h1>赞助作者</h1>'));
+  assert.match(main,/<ul class="donate-grid">\s*<li>.*?href="https:\/\/example.org\/support">支持开源<\/a>.*?<\/li>\s*<\/ul>/);
+  assert.ok(main.indexOf('id="comments"')>main.indexOf('</ul>'));
   assert.match(donations,/data-post-id="donate"/);
   const friends=await page('/friendlinks');
   assert.ok(friends.includes(origin+'/media/profile.png'));
