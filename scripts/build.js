@@ -43,8 +43,11 @@ const home=homeWithSlots.replace(/<div class="post-list">[\s\S]*?<\/div><\/secti
 const initialProjects=JSON.parse(await readFile(resolve(root,'database/initial-projects.json'),'utf8'));
 const about=replaceSection(await readFile(resolve(root,'about.html'),'utf8'),'about-profile','__ABOUT_PROFILE__');
 const donationSource=await readFile(resolve(root,'donate.html'),'utf8');
-const donations=replaceSection(donationSource,'donation-items','__DONATION_ITEMS__');
-const initialDonations=Array.from(donationSource.matchAll(/<a class="post-title" href="([^"]+)">([^<]+)<\/a>/g), ([,url,name])=>({name,url}));
+const donationList=/<ul class="donate-grid">([\s\S]*?)<\/ul>/;
+const donationItems=donationSource.match(donationList)?.[1];
+if (!donationItems) throw new Error('Missing donation list in donate.html');
+const donations=donationSource.replace(donationList,'<ul class="donate-grid">__DONATION_ITEMS__</ul>');
+const initialDonations=Array.from(donationItems.matchAll(/<a class="post-title" href="([^"]+)">([^<]+)<\/a>/g), ([,url,name])=>({name,url}));
 if (!initialDonations.length) throw new Error('Default donation links are missing');
 const page=pageSource.replace(/<main\b[^>]*>[\s\S]*?<\/main>/,'<main id="main" tabindex="-1" class="site-main">__BLOG_MAIN__</main>');
 const commentForm=postSource.match(/<section class="comment-container[\s\S]*?<\/section>/)?.[0];
