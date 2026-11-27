@@ -1,4 +1,4 @@
-import {home,page,commentForm,friends,about,donations} from './generated/templates.js';
+import {home,page,archiveScript,commentForm,friends,about,donations} from './generated/templates.js';
 import {escape} from './http.js';
 import {renderMarkdown} from './markdown.js';
 
@@ -52,7 +52,7 @@ export function renderPage(main,{title='博客列表 · 小涵 Naiwenel',descrip
   for(const [key,value] of Object.entries(values)) result=result.replace(new RegExp(`<meta (name|property)="${key}" content="[^"]*">`),(_,attribute)=>`<meta ${attribute}="${key}" content="${escape(value)}">`);
   result=result.replace(/<link rel="canonical" href="[^"]*">/,()=>`<link rel="canonical" href="${origin+escape(path)}">`);
   if (postId) result=result.replace('<body>',()=>`<body data-post-id="${escape(postId)}">`).replace('</head>','<script src="/assets/js/comments.js" defer></script></head>');
-  if (archive) result=result.replace('</head>','<script src="/assets/js/archive.js" defer></script></head>');
+  if (archive) result=result.replace('</head>',`<script src="${archiveScript}" defer></script></head>`);
   return result;
 }
 
@@ -69,7 +69,7 @@ export function pagination(result,options) {
 }
 export function renderArchive(result,options,categories) {
   const filters=[{category:'',name:'全部'},...categories.map(item=>({category:item.category,name:item.category}))].map(item=>`<a data-archive-link href="${escape(archiveUrl(options,{category:item.category,page:1}))}" ${options.category===item.category?'aria-current="true"':''}>${escape(item.name)}</a>`).join('');
-  return renderPage(`<header class="page-intro"><h1>博客列表</h1><p>这里记录了小涵的想法、日志与创作旅程。</p></header><section id="articleArchive" aria-label="文章归档"><div class="archive-tools"><nav class="filter-group" aria-label="文章分类">${filters}</nav><form class="search-box" id="archiveSearch" action="/blog" method="get" role="search"><input type="hidden" name="category" value="${escape(options.category)}"><label class="sr-only" for="articleSearch">搜索文章</label><input id="articleSearch" name="q" type="search" maxlength="100" value="${escape(options.q)}" placeholder="搜索文章" autocomplete="off"><button type="submit">搜索</button></form></div><p id="archiveStatus" role="status" class="muted small">共 ${result.total} 篇文章</p><div class="archive-list">${postCards(result.items)}</div><div id="archivePager">${pagination(result,options)}</div></section>`,{archive:true});
+  return renderPage(`<header class="page-intro"><h1>博客列表</h1><p>这里记录了小涵的想法、日志与创作旅程。</p></header><section id="articleArchive" aria-label="文章归档"><div class="archive-tools"><nav class="filter-group" aria-label="文章分类">${filters}</nav><form class="search-box" id="archiveSearch" action="/blog" method="get" role="search"><input type="hidden" name="category" value="${escape(options.category)}"><label class="sr-only" for="articleSearch">搜索文章</label><input id="articleSearch" name="q" type="search" maxlength="100" value="${escape(options.q)}" placeholder="搜索文章" autocomplete="off"><button type="submit" aria-label="搜索文章" title="搜索文章"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></svg></button></form></div><p id="archiveStatus" role="status" class="muted small">共 ${result.total} 篇文章</p><div class="archive-list">${postCards(result.items)}</div><div id="archivePager">${pagination(result,options)}</div></section>`,{archive:true});
 }
 export function renderPost(post,neighbors=[]) {
   const minutes=Math.max(1,Math.ceil(post.markdown.length/400));

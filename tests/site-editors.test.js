@@ -47,7 +47,9 @@ test('saved owner settings appear on their public pages and keep existing routes
   const blog=await page('/blog');
   assert.match(blog,/点此阅读/);
   assert.doesNotMatch(blog,/继续阅读/);
-  assert.match(blog,/<button type="submit">搜索<\/button>/);
+  assert.match(blog,/<button type="submit" aria-label="搜索文章"[^>]*><svg aria-hidden="true"/);
+  assert.match(blog,/href="\/assets\/css\/site\.[a-f0-9]{12}\.css"/);
+  assert.match(blog,/src="\/assets\/js\/archive\.[a-f0-9]{12}\.js"/);
   const searchResults=await (await call('/api/posts?q='+encodeURIComponent('第一篇'))).json();
   assert.match(searchResults.html,/点此阅读/);
   const about=await page('/about');
