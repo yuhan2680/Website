@@ -9,7 +9,7 @@ if (dirname(output) !== resolve(root) || (await lstat(output).catch(() => null))
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 // Only explicit public assets enter the deployment; no tests, templates or local data.
-for (const name of ['index.html','blog.html','404.html','rss.xml','sitemap.xml','robots.txt','_headers','_redirects','_routes.json']) await copyFile(resolve(root,name), resolve(output,name));
+for (const name of ['index.html','404.html','rss.xml','sitemap.xml','robots.txt','_headers','_redirects','_routes.json']) await copyFile(resolve(root,name), resolve(output,name));
 for (const name of ['assets','live2d']) await cp(resolve(root,name),resolve(output,name),{recursive:true});
 await mkdir(resolve(output,'posts'),{recursive:true});
 await copyFile(resolve(root,'posts/post_style.css'),resolve(output,'posts/post_style.css'));
@@ -17,7 +17,20 @@ await copyFile(resolve(root,'posts/post_style.css'),resolve(output,'posts/post_s
 // Compile the existing layout into server-only templates. Article HTML is not
 // published as a static asset, so withdrawing a post also removes its old URL.
 const homeSource=await readFile(resolve(root,'index.html'),'utf8');
-const pageSource=await readFile(resolve(root,'blog.html'),'utf8');
+// Keep archive markup paired with its stylesheet and submit handler across deployments.
+async function versionAsset(source,content) {
+  const hash=createHash('sha256').update(content).digest('hex').slice(0,12);
+  const versioned=source.replace(/\.[^.]+$/,extension=>'.'+hash+extension);
+  await writeFile(resolve(output,versioned),content);
+  return versioned;
+}
+let pageSource=await readFile(resolve(root,'blog.html'),'utf8');
+for (const source of ['assets/css/site.css','assets/js/site.js']) {
+  const versioned=await versionAsset(source,await readFile(resolve(root,source)));
+  pageSource=pageSource.replace('/'+source,'/'+versioned);
+}
+await writeFile(resolve(output,'blog.html'),pageSource);
+const archiveScript='/'+await versionAsset('assets/js/archive.js',await readFile(resolve(root,'assets/js/archive.js')));
 const postSource=await readFile(resolve(root,'posts/post3.html'),'utf8');
 function replaceSection(source, section, slot) {
   const start = '<!-- '+section+' -->', end = '<!-- /'+section+' -->';
@@ -49,14 +62,12 @@ for (const [directory,name,extension] of [['js','admin','js'],['js','admin-frien
   const source=`assets/${directory}/${name}.${extension}`;
   let content=await readFile(resolve(root,source),'utf8');
   if (settingsModule) content=content.replaceAll("'./admin-settings.js'","'./"+settingsModule+"'");
-  const hash=createHash('sha256').update(content).digest('hex').slice(0,12);
-  const versioned=`assets/${directory}/${name}.${hash}.${extension}`;
-  if (name==='admin-settings') settingsModule=`admin-settings.${hash}.js`;
-  await writeFile(resolve(output,versioned),content);
+  const versioned=await versionAsset(source,content);
+  if (name==='admin-settings') settingsModule=versioned.split('/').pop();
   for (const key of Object.keys(adminTemplates)) adminTemplates[key]=adminTemplates[key].replaceAll('/'+source,'/'+versioned);
 }
 const schema=(await readFile(resolve(root,'database/blog.sql'),'utf8')).split(';').map(sql=>sql.trim()).filter(Boolean);
 const friendSchema=(await readFile(resolve(root,'database/friendlinks.sql'),'utf8')).split(';').map(sql=>sql.trim()).filter(Boolean);
 await mkdir(resolve(root,'server/generated'),{recursive:true});
-await writeFile(resolve(root,'server/generated/templates.js'),Object.entries({home,page,about,donations,initialDonations,initialProjects,commentForm,...adminTemplates,schema,friends,friendSchema}).map(([name,value])=>`export const ${name} = ${JSON.stringify(value)};`).join('\n')+'\n');
+await writeFile(resolve(root,'server/generated/templates.js'),Object.entries({home,page,archiveScript,about,donations,initialDonations,initialProjects,commentForm,...adminTemplates,schema,friends,friendSchema}).map(([name,value])=>`export const ${name} = ${JSON.stringify(value)};`).join('\n')+'\n');
 console.log('Built public website in dist/');
