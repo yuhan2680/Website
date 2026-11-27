@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>项目及作品管理 · 小涵 Naiwenel</title>
+  <link rel="icon" href="/assets/images/avatar-logo.jpg">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="/assets/js/admin-collections.js" type="module"></script>
+</head>
+<body>
+  <header class="admin-header">
+    <a href="/" class="admin-brand"><img src="/assets/images/avatar-logo.jpg" width="30" height="30" alt="">小涵 <span>内容管理</span></a>
+    <nav class="admin-nav" aria-label="后台导航"><a href="/admin">文章</a><a href="/admin/friendlinks">友情链接</a><a href="/admin/profile">个人资料</a><a href="/admin/projects" aria-current="page">项目</a><a href="/admin/donations">赞助</a></nav>
+    <div class="account"><span id="accountName"></span><a href="/cdn-cgi/access/logout">退出</a></div>
+  </header>
+  <main class="profile-editor">
+    <header class="collection-heading"><h1>项目及作品</h1><a href="/#projects" target="_blank" rel="noopener">查看首页作品 ↗</a></header>
+    <form id="collectionEditor" data-collection="projects" autocomplete="off">
+      <fieldset id="collectionFields" disabled>
+        <div id="collectionRows"></div>
+        <p id="emptyList" class="subtle" hidden>还没有项目。</p>
+        <button id="addItem" type="button">＋ 添加项目</button>
+      </fieldset>
+      <footer>
+        <p id="profileStatus" role="status" aria-live="polite">正在读取…</p>
+        <button id="reloadCollection" type="button" hidden>重新读取</button>
+        <button id="saveCollection" class="primary" type="submit" disabled>保存项目</button>
+      </footer>
+    </form>
+  </main>
+</body>
+</html>

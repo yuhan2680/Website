@@ -1,14 +1,22 @@
 import {authenticateAdmin,requireMutation} from './auth.js';
 import {HttpError,json,html,readJson,escape,securityHeaders} from './http.js';
 import {database,listPosts,categories,getPost,savePost,queryOptions} from './posts.js';
-import {renderHome,renderArchive,renderPost,renderPage,postCards,pagination,renderFeed,renderSitemap,renderFriendlinks} from './render.js';
+import {renderHome,renderAbout,renderDonations,renderArchive,renderPost,renderPage,postCards,pagination,renderFeed,renderSitemap,renderFriendlinks} from './render.js';
 import {renderMarkdown} from './markdown.js';
-import {admin,friendAdmin} from './generated/templates.js';
+import {admin,friendAdmin,profileAdmin,donationAdmin,projectAdmin} from './generated/templates.js';
+import {getProfile,saveProfile} from './profile.js';
+import {getDonations,saveDonations} from './donations.js';
+import {getProjects,saveProjects} from './projects.js';
 import {friendDatabase,listFriendlinks,getFriendlink,saveFriendlink} from './friendlinks.js';
 import {uploadImage,serveImage} from './media.js';
 import {onRequest as comments} from '../functions/api/comments.js';
 
 const adminHeaders={'X-Robots-Tag':'noindex, nofollow','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data:; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'"};
+const editors=new Map([
+  ['profile',{page:profileAdmin,get:getProfile,save:saveProfile}],
+  ['donations',{page:donationAdmin,get:getDonations,save:saveDonations}],
+  ['projects',{page:projectAdmin,get:getProjects,save:saveProjects}]
+]);
 
 export function createHandler({authenticate=authenticateAdmin}={}) {
   return async function handle(request,env) {
@@ -22,6 +30,19 @@ export function createHandler({authenticate=authenticateAdmin}={}) {
         if(!['GET','HEAD'].includes(request.method))requireMutation(request,user);
         if(['/admin','/admin/','/admin.html'].includes(path)&&['GET','HEAD'].includes(request.method))return html(request.method==='HEAD'?'':admin,200,adminHeaders);
         if(['/admin/friendlinks','/admin/friendlinks/'].includes(path)&&['GET','HEAD'].includes(request.method))return html(request.method==='HEAD'?'':friendAdmin,200,adminHeaders);
+        const editor=editors.get(path.replace(/\/$/,'').slice('/admin/'.length));
+        if(editor&&['GET','HEAD'].includes(request.method)) {
+          return html(request.method==='HEAD'?'':editor.page,200,adminHeaders);
+        }
+        const settingKey=path.startsWith('/admin/api/')?path.slice('/admin/api/'.length):'';
+        const setting=editors.get(settingKey);
+        if(setting) {
+          let value;
+          if(request.method==='GET') value=await setting.get(env);
+          else if(request.method==='PUT') value=await setting.save(env,await readJson(request));
+          else throw new HttpError(405,'方法不允许');
+          return json({ok:true,[settingKey]:value},200,adminHeaders);
+        }
         if(path==='/admin/api/session'&&request.method==='GET')return json({ok:true,user:{email:user.email},csrf:user.csrf},200,adminHeaders);
         if(path==='/admin/api/media') {
           if(request.method!=='POST')throw new HttpError(405,'方法不允许');
@@ -74,15 +95,22 @@ export function createHandler({authenticate=authenticateAdmin}={}) {
       }
       if(!['GET','HEAD'].includes(request.method))throw new HttpError(405,'方法不允许');
       if(path.startsWith('/media/'))return await serveImage(request,env);
-      const canonical={'/index.html':'/','/blog.html':'/blog','/blog/':'/blog','/friendlinks.html':'/friendlinks','/friendlinks/':'/friendlinks'}[path];
+      const canonical={'/index.html':'/','/blog.html':'/blog','/blog/':'/blog','/friendlinks.html':'/friendlinks','/friendlinks/':'/friendlinks','/about.html':'/about','/about/':'/about','/donate.html':'/donate','/donate/':'/donate'}[path];
       if(canonical)return new Response(null,{status:301,headers:{...securityHeaders,Location:canonical+url.search}});
       if(path==='/posts/post_style.css')return env.ASSETS.fetch(request);
-      const dynamic=path==='/'||path==='/blog'||path==='/friendlinks'||path==='/api/posts'||path.startsWith('/posts/')||path==='/rss.xml'||path==='/sitemap.xml';
+      const dynamic=path==='/'||path==='/blog'||path==='/about'||path==='/donate'||path==='/friendlinks'||path==='/api/posts'||path.startsWith('/posts/')||path==='/rss.xml'||path==='/sitemap.xml';
       if(!dynamic)return env.ASSETS.fetch(request);
       const db=await database(env);
       let response;
-      if(path==='/')response=html(renderHome((await listPosts(db,{limit:3})).items));
-      else if(path==='/friendlinks')response=html(renderFriendlinks(await listFriendlinks(await friendDatabase(env))));
+      if(path==='/') {
+        const [posts,profile,projects]=await Promise.all([listPosts(db,{limit:3}),getProfile(env),getProjects(env)]);
+        response=html(renderHome(posts.items,profile,projects.items));
+      } else if(path==='/about') response=html(renderAbout(await getProfile(env)));
+      else if(path==='/donate') response=html(renderDonations((await getDonations(env)).items));
+      else if(path==='/friendlinks') {
+        const [links,profile]=await Promise.all([friendDatabase(env).then(db=>listFriendlinks(db)),getProfile(env)]);
+        response=html(renderFriendlinks(links,undefined,profile.avatar,url.origin));
+      }
       else if(path==='/blog'||path==='/api/posts') {
         const options=queryOptions(url), result=await listPosts(db,options);
         if(path==='/api/posts')response=json({...result,html:postCards(result.items),pagination:pagination(result,options)});
