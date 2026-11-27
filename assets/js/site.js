@@ -40,18 +40,21 @@
   document.querySelectorAll(".friend-card img").forEach((img) => img.addEventListener("error", () => { img.src = "/assets/images/avatar-logo.jpg"; }, { once: true }));
 
   const search = document.getElementById("postSearch"), filters = document.querySelectorAll("[data-filter]");
-  let category = "all";
+  let category = "all", appliedQuery = "";
   function filterPosts() {
     let count = 0;
-    const query = search?.value.trim().toLocaleLowerCase() || "";
     document.querySelectorAll("[data-post-card]").forEach((card) => {
-      card.hidden = !((category === "all" || card.dataset.category === category) && card.textContent.toLocaleLowerCase().includes(query));
+      card.hidden = !((category === "all" || card.dataset.category === category) && card.textContent.toLocaleLowerCase().includes(appliedQuery));
       if (!card.hidden) count++;
     });
     const result = document.getElementById("searchStatus");
     if (result) result.textContent = count ? `找到 ${count} 篇文章` : "还没有相关内容，换个关键词试试。";
   }
-  search?.addEventListener("input", filterPosts);
+  search?.form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    appliedQuery = search.value.trim().toLocaleLowerCase();
+    filterPosts();
+  });
   filters.forEach((button) => button.addEventListener("click", () => {
     category = button.dataset.filter;
     filters.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
