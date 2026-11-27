@@ -44,7 +44,12 @@ test('saved owner settings appear on their public pages and keep existing routes
   assert.doesNotMatch(home,/class="project-card[^"]*" href="https:\/\/store.steampowered.com/);
   assert.match(home,/点此阅读/);
   assert.doesNotMatch(home,/继续阅读/);
-  assert.match(await page('/blog'),/继续阅读/);
+  const blog=await page('/blog');
+  assert.match(blog,/点此阅读/);
+  assert.doesNotMatch(blog,/继续阅读/);
+  assert.match(blog,/<button type="submit">搜索<\/button>/);
+  const searchResults=await (await call('/api/posts?q='+encodeURIComponent('第一篇'))).json();
+  assert.match(searchResults.html,/点此阅读/);
   const about=await page('/about');
   assert.match(about,/<h1>个人简介<\/h1>/);
   assert.match(about,/<strong>作者近况<\/strong>/);
